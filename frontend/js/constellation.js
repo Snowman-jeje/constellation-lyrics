@@ -66,7 +66,11 @@ class ConstellationManager {
     }
 
     this.currentLineIndex = lineData.line_index;
-    const rawWords = lineData.words;
+    // Filter out parenthetical lyrics and ad-libs in frontend
+    const rawWords = (lineData.words || []).filter(w => {
+      const txt = (w.word || '').trim();
+      return txt && !txt.startsWith('(') && !txt.endsWith(')') && !txt.includes('(') && !txt.includes(')');
+    });
     const count = rawWords.length;
 
     // Calculate cadence (words per second - WPS) for adaptive rap agility
@@ -237,24 +241,21 @@ class ConstellationManager {
 
     let activeIdx = -1;
 
-    // Dynamic agility multiplier for fast rap flow
+    // Dynamic agility multiplier for fast rap flow (fluid, no discrete teleportation)
     const cadence = this.currentCadence || 2.0;
-    const agilityMultiplier = Math.max(1.0, Math.min(3.8, cadence / 2.0));
-    const revealRate = 18 * agilityMultiplier;
-    const scaleRate = 14 * agilityMultiplier;
-    const glowRate = 12 * agilityMultiplier;
-    const edgeRate = 16 * agilityMultiplier;
+    const agilityMultiplier = Math.max(1.0, Math.min(2.8, cadence / 2.2));
+    const revealRate = 22 * agilityMultiplier;
+    const scaleRate = 16 * agilityMultiplier;
+    const glowRate = 14 * agilityMultiplier;
+    const edgeRate = 18 * agilityMultiplier;
 
-    // 2. Reveal active words ONE BY ONE as audio reaches them
+    // 2. Reveal active words ONE BY ONE as audio reaches them (smooth blooming)
     for (let i = 0; i < this.words.length; i++) {
       const w = this.words[i];
 
       if (currentPosition >= w.start) {
         w.revealed = true;
-        // In fast rap flow, snap immediately to visible so short syllables never lag
-        if (agilityMultiplier > 1.3 && w.revealProgress < 0.85) {
-          w.revealProgress = 0.85;
-        }
+        // Fluid continuous ease-in (no sudden jarring snap)
         w.revealProgress += (1.0 - w.revealProgress) * Math.min(1, dt * revealRate);
       } else {
         w.revealed = false;
@@ -266,9 +267,9 @@ class ConstellationManager {
         activeIdx = i;
       }
 
-      // Celestial floating (subtle organic motion)
-      w.x = w.baseX + Math.sin(time * 0.8 + w.phase) * (agilityMultiplier > 1.4 ? 2.5 : 5);
-      w.y = w.baseY + Math.cos(time * 0.7 + w.phase) * (agilityMultiplier > 1.4 ? 2.5 : 5);
+      // Celestial floating (smooth organic micro-motion)
+      w.x = w.baseX + Math.sin(time * 0.8 + w.phase) * (agilityMultiplier > 1.4 ? 3.0 : 5.0);
+      w.y = w.baseY + Math.cos(time * 0.7 + w.phase) * (agilityMultiplier > 1.4 ? 3.0 : 5.0);
     }
 
     if (activeIdx === -1 && this.words.length > 0) {
@@ -282,7 +283,7 @@ class ConstellationManager {
 
     this.activeWordIndex = activeIdx;
 
-    // Update active word glow & scale with rap-adaptive speed
+    // Update active word glow & scale with smooth exponential curves
     for (let i = 0; i < this.words.length; i++) {
       const w = this.words[i];
       const isActive = (i === activeIdx && w.revealed);
@@ -294,14 +295,11 @@ class ConstellationManager {
       w.glowIntensity += (targetGlow - w.glowIntensity) * Math.min(1, dt * glowRate);
     }
 
-    // 3. Progressive line drawing with cadence-aware speed
+    // 3. Progressive line drawing: laser-smooth growth
     for (const edge of this.edges) {
       const wFrom = this.words[edge.from];
       const wTo = this.words[edge.to];
       if (wFrom && wTo && wFrom.revealed && wTo.revealed) {
-        if (wTo.active && agilityMultiplier > 1.3) {
-          edge.progress = Math.max(edge.progress, 0.92);
-        }
         edge.progress += (1.0 - edge.progress) * Math.min(1, dt * edgeRate);
       } else {
         edge.progress = 0.0;

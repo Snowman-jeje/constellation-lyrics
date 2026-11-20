@@ -12,9 +12,11 @@ class ConstellationRenderer {
     this.ctx = mainCanvas.getContext('2d');
     this.manager = manager;
 
-    // Reticle (4-point crosshair star) position and physics
+    // Reticle (4-point crosshair star) position and second-order spring physics
     this.reticleX = -100;
     this.reticleY = -100;
+    this.reticleVx = 0;
+    this.reticleVy = 0;
     this.reticleAlpha = 0.0;
     this.stardustParticles = [];
 
@@ -267,40 +269,50 @@ class ConstellationRenderer {
       if (this.reticleX < 0) {
         this.reticleX = activeTarget.x;
         this.reticleY = activeTarget.y;
+        this.reticleVx = 0;
+        this.reticleVy = 0;
       }
 
-      // Adaptive high-agility spring glide toward active word (eliminates rap delay)
+      // Critically Damped Spring Dynamics (fluid, organic, fast without stiffness or teleports)
       const cadence = this.manager.currentCadence || 2.0;
-      const agility = Math.max(1.0, Math.min(3.8, cadence / 2.0));
+      const agility = Math.max(1.0, Math.min(2.8, cadence / 2.2));
 
       const dx = activeTarget.x - this.reticleX;
       const dy = activeTarget.y - this.reticleY;
-      const dist = Math.hypot(dx, dy);
 
-      // Base agility scales with vocal flow; boost speed if reticle is trailing target
-      let speedFactor = 16 * agility;
-      if (dist > 150 && agility > 1.2) {
-        speedFactor += (dist / 14) * (agility * 0.7);
-      }
+      // Natural frequency of the spring (rad/s)
+      const omega = 20.0 + agility * 8.0; // 28 to 42 rad/s for fast lyrics
+      const damping = 2.0 * omega; // Critical damping (zeta = 1.0, zero oscillation overshoot)
 
-      const lerpSpeed = Math.min(1.0, dt * speedFactor);
-      this.reticleX += dx * lerpSpeed;
-      this.reticleY += dy * lerpSpeed;
+      // Spring acceleration
+      const ax = (omega * omega) * dx - damping * this.reticleVx;
+      const ay = (omega * omega) * dy - damping * this.reticleVy;
+
+      // Update velocity and position with stable time-stepping
+      const subDt = Math.min(0.05, dt);
+      this.reticleVx += ax * subDt;
+      this.reticleVy += ay * subDt;
+      this.reticleX += this.reticleVx * subDt;
+      this.reticleY += this.reticleVy * subDt;
+
       this.reticleAlpha += (1.0 - this.reticleAlpha) * Math.min(1, dt * 14);
 
-      // Spawn stardust sparkles
-      if (Math.random() < (agility > 1.4 ? 0.65 : 0.45)) {
+      // Kinetic tracer stardust wake (emits fluidly when moving across words)
+      const speed = Math.hypot(this.reticleVx, this.reticleVy);
+      if (speed > 80 && Math.random() < 0.65) {
         this.stardustParticles.push({
-          x: this.reticleX + (Math.random() - 0.5) * 26,
-          y: this.reticleY + (Math.random() - 0.5) * 26,
-          vx: (Math.random() - 0.5) * 32,
-          vy: (Math.random() - 0.5) * 32 - 14,
-          alpha: 1.0,
-          size: Math.random() * 3.0 + 1.2
+          x: this.reticleX - (this.reticleVx / speed) * 8 + (Math.random() - 0.5) * 16,
+          y: this.reticleY - (this.reticleVy / speed) * 8 + (Math.random() - 0.5) * 16,
+          vx: -this.reticleVx * 0.12 + (Math.random() - 0.5) * 24,
+          vy: -this.reticleVy * 0.12 + (Math.random() - 0.5) * 24,
+          alpha: 0.95,
+          size: Math.random() * 2.8 + 1.0
         });
       }
     } else {
       this.reticleAlpha += (0.0 - this.reticleAlpha) * Math.min(1, dt * 6);
+      this.reticleVx *= Math.max(0, 1.0 - dt * 10);
+      this.reticleVy *= Math.max(0, 1.0 - dt * 10);
     }
 
     if (this.reticleAlpha < 0.02) return;

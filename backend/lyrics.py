@@ -195,14 +195,38 @@ class LyricsFetcher:
             for idx, raw_line in enumerate(doc['lines']):
                 raw_words = raw_line.get('words', [])
                 line_text = raw_line.get('text', '').strip()
+                # Remove parenthetical lyrics and ad-libs from line text
+                clean_line_text = re.sub(r'\(.*?\)[,\s]*', ' ', line_text).strip()
+                clean_line_text = re.sub(r'\s+', ' ', clean_line_text).strip()
+
                 start_sec = raw_line.get('start_ms', 0) / 1000.0
                 end_sec = raw_line.get('end_ms', raw_line.get('start_ms', 0) + 3000) / 1000.0
 
                 words: List[Dict[str, Any]] = []
+                in_parens = False
                 for w_idx, w in enumerate(raw_words):
                     w_text = w.get('text', '').strip()
                     if not w_text:
                         continue
+
+                    # Filter out any word or phrase enclosed in parentheses ()
+                    has_open = '(' in w_text
+                    has_close = ')' in w_text
+                    if has_open and has_close:
+                        continue
+                    elif has_open:
+                        in_parens = True
+                        continue
+                    elif in_parens:
+                        if has_close:
+                            in_parens = False
+                        continue
+                    elif has_close:
+                        continue
+
+                    if w_text in ',.?!:;':
+                        continue
+
                     w_start = w.get('start_ms', 0) / 1000.0
                     
                     # Word end is next word's start, or line end
@@ -220,7 +244,7 @@ class LyricsFetcher:
                 if words:
                     lines.append({
                         'line_index': idx,
-                        'text': line_text,
+                        'text': clean_line_text,
                         'start_time': round(start_sec, 3),
                         'end_time': round(end_sec, 3),
                         'words': words
@@ -276,13 +300,17 @@ class LyricsFetcher:
             else:
                 gap_to_next = 4.0
 
+            # Remove parenthetical lyrics, ad-libs, and trailing punctuation
+            clean_raw = re.sub(r'\(.*?\)[,\s]*', ' ', raw_content).strip()
+            clean_raw = re.sub(r'\s+', ' ', clean_raw).strip()
+
             # 1. Check for Enhanced LRC word-level tags: <mm:ss.xx> word <mm:ss.xx> word
-            tagged_matches = tag_word_regex.findall(raw_content)
+            tagged_matches = tag_word_regex.findall(clean_raw)
             if len(tagged_matches) >= 2:
                 words: List[Dict[str, Any]] = []
                 for w_idx, (w_ts, w_txt) in enumerate(tagged_matches):
                     clean_w = w_txt.strip()
-                    if not clean_w:
+                    if not clean_w or '(' in clean_w or ')' in clean_w or clean_w in ',.?!:;':
                         continue
                     w_start = self._parse_timestamp(w_ts)
                     if w_idx + 1 < len(tagged_matches):
@@ -297,7 +325,7 @@ class LyricsFetcher:
                 if words:
                     lines.append({
                         'line_index': len(lines),
-                        'text': re.sub(r'<[^>]+>', '', raw_content).strip(),
+                        'text': re.sub(r'<[^>]+>', '', clean_raw).strip(),
                         'start_time': start_time,
                         'end_time': start_time + gap_to_next,
                         'words': words
@@ -305,8 +333,9 @@ class LyricsFetcher:
                     continue
 
             # 2. Syllable-weighted natural vocal cadence pacing (handles fast rap & slow ballads)
-            clean_text = re.sub(r'<[^>]+>', '', raw_content).strip()
-            tokens = clean_text.split()
+            clean_text = re.sub(r'<[^>]+>', '', clean_raw).strip()
+            clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+            tokens = [t for t in clean_text.split() if '(' not in t and ')' not in t and t not in ',.?!:;']
             if not tokens:
                 continue
 
