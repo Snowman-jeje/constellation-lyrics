@@ -23,7 +23,7 @@ import { getCalibratedAccent, isTauriRuntime, safeInvoke } from './store/tauriBr
 import { useSuiteStore } from './store/useSuiteStore';
 import type { LyricsStyle } from './types/suite';
 
-const LYRIC_STYLE_ORDER: LyricsStyle[] = ['stars', 'lines', 'bigWords', 'lens', 'terminal'];
+const LYRIC_STYLE_ORDER: LyricsStyle[] = ['stars', 'lines', 'bigWords', 'lens', 'depth3d'];
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;

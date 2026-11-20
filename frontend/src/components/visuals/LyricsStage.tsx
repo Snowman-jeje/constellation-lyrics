@@ -10,9 +10,9 @@ import type { ColorPalette, LyricsData } from '../../types/music';
 import type { LyricsBackdrop, LyricsMotion, LyricsStyle } from '../../types/suite';
 import { ConstellationCanvas } from '../ConstellationCanvas';
 import { BigWordsLyrics } from './BigWordsLyrics';
+import { Depth3dLyrics } from './Depth3dLyrics';
 import { LensLyrics } from './LensLyrics';
 import { LinesLyrics } from './LinesLyrics';
-import { TerminalLyrics } from './TerminalLyrics';
 
 export interface LyricsStageProps {
   lyrics: LyricsData | null;
@@ -174,9 +174,7 @@ export function LyricsStage({
       </div>
 
       <div
-        className={`max-h-[62vh] w-full max-w-2xl overflow-y-auto px-4 py-4 text-center whitespace-pre-line ${
-          styleKind === 'terminal' ? 'font-mono text-sm leading-7' : 'font-display text-2xl leading-relaxed sm:text-3xl'
-        }`}
+        className="max-h-[62vh] w-full max-w-2xl overflow-y-auto px-4 py-4 text-center whitespace-pre-line font-display text-2xl leading-relaxed sm:text-3xl"
         style={{
           color: primaryInk,
           maskImage:
@@ -343,7 +341,7 @@ export function LyricsStage({
             {styleKind === 'lines' && <LinesLyrics {...rendererProps} />}
             {styleKind === 'bigWords' && <BigWordsLyrics {...rendererProps} />}
             {styleKind === 'lens' && <LensLyrics {...rendererProps} />}
-            {styleKind === 'terminal' && <TerminalLyrics {...rendererProps} />}
+            {styleKind === 'depth3d' && <Depth3dLyrics {...rendererProps} />}
           </motion.div>
         )}
       </AnimatePresence>

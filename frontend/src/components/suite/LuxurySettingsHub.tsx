@@ -68,7 +68,7 @@ const LYRIC_STYLES: ReadonlyArray<{ id: LyricsStyle; label: string }> = [
   { id: 'lines', label: 'Lines' },
   { id: 'bigWords', label: 'BigWords' },
   { id: 'lens', label: 'Lens' },
-  { id: 'terminal', label: 'Terminal' },
+  { id: 'depth3d', label: 'Depth 3D' },
 ];
 
 const SCENE_SWATCHES: ReadonlyArray<{
@@ -360,10 +360,12 @@ export function LuxurySettingsHub({
                                 {st.id === 'lens' && (
                                   <div className="h-5 w-5 rounded-full border border-white/30 bg-white/[0.08]" />
                                 )}
-                                {st.id === 'terminal' && (
-                                  <span className="font-mono text-[10px]" style={{ color: accent.css }}>
-                                    &gt;_
-                                  </span>
+                                {st.id === 'depth3d' && (
+                                  <div className="flex flex-col items-center gap-0.5" style={{ perspective: '40px' }}>
+                                    <span className="h-[1px] w-3 rounded bg-white/25" />
+                                    <span className="h-[1.5px] w-5 rounded bg-white/45" />
+                                    <span className="h-[2px] w-7 rounded" style={{ backgroundColor: accent.css }} />
+                                  </div>
                                 )}
                               </div>
                               <span className="text-[10px] text-[#8E8A82]">{st.label}</span>
@@ -1230,7 +1232,7 @@ export function LuxurySettingsHub({
 
                         <div className="flex items-center justify-between gap-2 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
                           <span className="font-mono text-[11px] tabular-nums text-[#8E8A82]">
-                            v{updateInfo?.current_version ?? '3.0.0'}
+                            v{updateInfo?.current_version ?? '3.1.0'}
                           </span>
                           <div className="flex items-center gap-1.5">
                             <button

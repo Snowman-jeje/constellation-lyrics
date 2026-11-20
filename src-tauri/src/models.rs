@@ -408,9 +408,14 @@ fn sanitize_hex(val: &str, fallback: &str) -> String {
 
 impl AppSettings {
     pub fn sanitized(mut self) -> Self {
+        let migrated_style = if self.lyrics.style == "terminal" {
+            "depth3d"
+        } else {
+            &self.lyrics.style
+        };
         self.lyrics.style = allow_or_default(
-            &self.lyrics.style,
-            &["stars", "lines", "bigWords", "lens", "terminal"],
+            migrated_style,
+            &["stars", "lines", "bigWords", "lens", "depth3d"],
             "stars",
         );
         self.lyrics.backdrop = allow_or_default(

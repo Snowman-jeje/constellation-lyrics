@@ -130,8 +130,15 @@ export function detectBrowserCapabilities(): PlatformCapabilities {
 
 export function mergeSettings(partial?: Partial<AppSettings> | null): AppSettings {
   if (!partial) return structuredClone(DEFAULT_SETTINGS);
+  const rawStyle = (partial.lyrics as { style?: string } | undefined)?.style;
+  const migratedLyrics = partial.lyrics
+    ? {
+        ...partial.lyrics,
+        style: rawStyle === 'terminal' ? ('depth3d' as const) : partial.lyrics.style,
+      }
+    : {};
   return {
-    lyrics: { ...DEFAULT_SETTINGS.lyrics, ...(partial.lyrics ?? {}) },
+    lyrics: { ...DEFAULT_SETTINGS.lyrics, ...migratedLyrics },
     live: { ...DEFAULT_SETTINGS.live, ...(partial.live ?? {}) },
     glow: { ...DEFAULT_SETTINGS.glow, ...(partial.glow ?? {}) },
     island: { ...DEFAULT_SETTINGS.island, ...(partial.island ?? {}) },

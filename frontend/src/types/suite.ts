@@ -1,4 +1,4 @@
-export type LyricsStyle = 'stars' | 'lines' | 'bigWords' | 'lens' | 'terminal';
+export type LyricsStyle = 'stars' | 'lines' | 'bigWords' | 'lens' | 'depth3d';
 export type LyricsBackdrop = 'black' | 'white' | 'cover' | 'aura' | 'live';
 export type LyricsMotion = 'words' | 'backdrop' | 'standing';
 

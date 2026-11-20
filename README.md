@@ -2,9 +2,21 @@
 
 Cross-platform desktop music visualizer, synced lyrics constellation, Dynamic Island companion, WebGL2 live shader stage, and ambient desktop utility suite built with **Tauri v2 (Rust + React 19 + TypeScript + Framer Motion + GSAP + WebGL2/GLSL)** under the **Obsidian Atelier** minimalist luxury design system.
 
+## Download
+
+Download the latest native installers directly from [GitHub Releases (v3.1.0)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
+
+| Platform | Package | Download |
+| :--- | :--- | :--- |
+| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation Suite_3.1.0_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.0/Constellation.Suite_3.1.0_x64-setup.exe) |
+| **Linux (Debian / Ubuntu)** | `.deb` Package | [Browse v3.1.0 `.deb` on Releases](https://github.com/Snowman-jeje/constellation-lyrics/releases/tag/v3.1.0) |
+| **Linux (Universal)** | `.AppImage` | [Browse v3.1.0 `.AppImage` on Releases](https://github.com/Snowman-jeje/constellation-lyrics/releases/tag/v3.1.0) |
+
+All release binaries include `checksums-windows.txt` and `checksums-linux.txt` for SHA-256 verification, and the app checks for new releases automatically via the built-in updater.
+
 ## Features
 
-- **5 Lyrics Renderers**: `Stars` (constellation canvas), `Lines` (smooth multi-row depth glide), `BigWords` (kinetic editorial serif with optional album art text mask), `Lens` (optical glass loupe), and `Terminal` (monospace live stdout stream).
+- **5 Lyrics Renderers**: `Stars` (constellation canvas), `Lines` (smooth multi-row depth glide), `BigWords` (kinetic editorial serif with optional album art text mask), `Lens` (optical glass loupe), and `Depth 3D` (3D Z-corridor perspective where upcoming lyrics emerge from deep space into focal clarity with pointer tilt and beat pulse).
 - **4 Backdrops & 12 Live WebGL2 Scenes**: `Black`, `White`, `Cover`, `Aura`, and `Live` featuring 12 procedural GLSL fragment shaders (`aurora`, `orb`, `sea`, `dream`, `fall`, `silk`, `shoal`, `veil`, `lane`, `tide`, `city`, `wall`) with pointer parallax and ambient Canvas 2D weather (`rain`, `snow`, `mist`, `stars`).
 - **4 Beat Glow Styles**: `Rim`, `Edges`, `Corners`, and `Sides` driven by real-time WASAPI/Monitor loopback FFT beat detection (`Music` vs `Steady`) with customizable thickness, brightness, and custom dual colors.
 - **Multi-Mode Dynamic Island**: Morphing pill supporting `Closed`, `Peek`, `Player`, `Big` (spinning vinyl + tonearm), `HUD`, `Weather` (Open-Meteo), `Timer` (with audio ducker), `Notes`, `Tasks`, and `Hardware` telemetry gauges across 3 glass looks.
