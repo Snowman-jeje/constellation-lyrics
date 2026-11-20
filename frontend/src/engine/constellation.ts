@@ -144,11 +144,11 @@ export class ConstellationManager {
     const cadence = count / lineDuration;
     this.currentCadence = cadence;
 
-    const minX = width * 0.1;
-    const maxX = width * 0.9;
-    const minY = height * 0.16;
-    const maxY = height * 0.76;
-    const centerY = height * 0.46;
+    const minX = width * 0.12;
+    const maxX = width * 0.88;
+    const minY = height * 0.22;
+    const maxY = height * 0.72;
+    const centerY = height * 0.47;
 
     const spanX = Math.max(120, maxX - minX);
     const spanY = Math.max(100, maxY - minY);

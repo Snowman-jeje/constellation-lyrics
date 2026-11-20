@@ -114,43 +114,10 @@ impl LinuxMprisMonitor {
             }
         }
 
-        let metadata = props
+        let (title, artist, album, art_url, length, track_id) = props
             .get("Metadata")
-            .and_then(val_as_dict)
+            .map(extract_metadata)
             .unwrap_or_default();
-
-        let title = metadata
-            .get("xesam:title")
-            .and_then(val_as_string)
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-        let artist = metadata
-            .get("xesam:artist")
-            .and_then(val_as_artist)
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-        let album = metadata
-            .get("xesam:album")
-            .and_then(val_as_string)
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-        let art_url = metadata
-            .get("mpris:artUrl")
-            .and_then(val_as_string)
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-        let length = metadata
-            .get("mpris:length")
-            .and_then(val_as_i64)
-            .map(|us| (us.max(0) as f64) / 1_000_000.0)
-            .unwrap_or(0.0);
-        let track_id = metadata
-            .get("mpris:trackid")
-            .and_then(val_as_string);
 
         let player_label = bus_name
             .strip_prefix(MPRIS_PREFIX)
@@ -329,15 +296,19 @@ fn clean_art_url(raw: &str) -> String {
 }
 
 fn val_as_string(val: &OwnedValue) -> Option<String> {
-    match &**val {
+    raw_val_as_string(val)
+}
+
+fn raw_val_as_string(val: &Value<'_>) -> Option<String> {
+    match val {
         Value::Str(s) => Some(s.as_str().to_string()),
         Value::ObjectPath(p) => Some(p.as_str().to_string()),
         _ => None,
     }
 }
 
-fn val_as_artist(val: &OwnedValue) -> Option<String> {
-    match &**val {
+fn raw_val_as_artist(val: &Value<'_>) -> Option<String> {
+    match val {
         Value::Str(s) => Some(s.as_str().to_string()),
         Value::Array(arr) => {
             let mut items = Vec::new();
@@ -360,7 +331,11 @@ fn val_as_artist(val: &OwnedValue) -> Option<String> {
 }
 
 fn val_as_i64(val: &OwnedValue) -> Option<i64> {
-    match &**val {
+    raw_val_as_i64(val)
+}
+
+fn raw_val_as_i64(val: &Value<'_>) -> Option<i64> {
+    match val {
         Value::I64(n) => Some(*n),
         Value::U64(n) => i64::try_from(*n).ok(),
         Value::I32(n) => Some(*n as i64),
@@ -369,8 +344,54 @@ fn val_as_i64(val: &OwnedValue) -> Option<i64> {
     }
 }
 
-fn val_as_dict(val: &OwnedValue) -> Option<HashMap<String, OwnedValue>> {
-    HashMap::<String, OwnedValue>::try_from(val.clone()).ok()
+fn extract_metadata(val: &OwnedValue) -> (String, String, String, String, f64, Option<String>) {
+    let mut title = String::new();
+    let mut artist = String::new();
+    let mut album = String::new();
+    let mut art_url = String::new();
+    let mut length = 0.0_f64;
+    let mut track_id = None;
+
+    if let Value::Dict(dict) = &**val {
+        for (k, v) in dict.iter() {
+            let Value::Str(key) = k else {
+                continue;
+            };
+            match key.as_str() {
+                "xesam:title" => {
+                    if let Some(s) = raw_val_as_string(v) {
+                        title = s.trim().to_string();
+                    }
+                }
+                "xesam:artist" => {
+                    if let Some(s) = raw_val_as_artist(v) {
+                        artist = s.trim().to_string();
+                    }
+                }
+                "xesam:album" => {
+                    if let Some(s) = raw_val_as_string(v) {
+                        album = s.trim().to_string();
+                    }
+                }
+                "mpris:artUrl" => {
+                    if let Some(s) = raw_val_as_string(v) {
+                        art_url = s.trim().to_string();
+                    }
+                }
+                "mpris:length" => {
+                    if let Some(us) = raw_val_as_i64(v) {
+                        length = (us.max(0) as f64) / 1_000_000.0;
+                    }
+                }
+                "mpris:trackid" => {
+                    track_id = raw_val_as_string(v);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    (title, artist, album, art_url, length, track_id)
 }
 
 fn now_unix_secs() -> f64 {

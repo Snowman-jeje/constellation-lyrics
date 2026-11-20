@@ -168,8 +168,8 @@ export class ConstellationRenderer {
     }
 
     this.renderEdges(ctx);
-    this.renderWords(ctx);
     this.renderReticle(ctx, dt, time);
+    this.renderWords(ctx);
     this.renderStardust(ctx, dt);
   }
 
@@ -326,15 +326,15 @@ export class ConstellationRenderer {
 
       if (w.active) {
         if (!this.lightMode) {
-          ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, 0.85)`;
-          ctx.shadowBlur = 32 * glow;
+          ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, 0.78)`;
+          ctx.shadowBlur = 24 * glow;
         }
         ctx.fillStyle = activeInk;
-        ctx.fillText(w.word, 0, 12);
+        ctx.fillText(w.word, 0, 22);
       } else {
         ctx.shadowBlur = 0;
         ctx.fillStyle = inactiveInk;
-        ctx.fillText(w.word, 0, 9);
+        ctx.fillText(w.word, 0, 15);
       }
 
       ctx.restore();
@@ -398,45 +398,45 @@ export class ConstellationRenderer {
     ctx.translate(this.reticleX, this.reticleY);
     ctx.globalAlpha = this.reticleAlpha;
 
-    const ringRadius = 40 + (this.reducedMotion ? 0 : Math.sin(time * 3) * 2.2) + this.beat * 5;
+    const ringRadius = 22 + (this.reducedMotion ? 0 : Math.sin(time * 3) * 1.6) + this.beat * 3.5;
     ctx.strokeStyle = this.lightMode
-      ? `rgba(${pr}, ${pg}, ${pb}, 0.55)`
-      : 'rgba(244, 242, 237, 0.55)';
-    ctx.lineWidth = 1.4;
+      ? `rgba(${pr}, ${pg}, ${pb}, 0.48)`
+      : 'rgba(244, 242, 237, 0.48)';
+    ctx.lineWidth = 1.15;
     ctx.beginPath();
     ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    const pulse = this.reducedMotion ? 1.0 : 1.0 + Math.sin(time * 4) * 0.1 + this.beat * 0.15;
-    const spikeLen = 72 * pulse;
-    const spikeWidth = 5.0;
+    const pulse = this.reducedMotion ? 1.0 : 1.0 + Math.sin(time * 4) * 0.08 + this.beat * 0.12;
+    const spikeLen = 34 * pulse;
+    const spikeWidth = 3.0;
 
     ctx.fillStyle = this.lightMode ? '#111114' : '#F4F2ED';
-    ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.3 : 0.9})`;
-    ctx.shadowBlur = this.lightMode ? 12 : 28;
+    ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.25 : 0.85})`;
+    ctx.shadowBlur = this.lightMode ? 10 : 20;
 
     this.drawDiamondFlare(ctx, 0, 0, spikeLen, spikeWidth);
     this.drawDiamondFlare(ctx, 0, 0, spikeWidth, spikeLen);
 
     ctx.save();
     ctx.rotate(Math.PI / 4);
-    this.drawDiamondFlare(ctx, 0, 0, spikeLen * 0.45, spikeWidth * 0.7);
-    this.drawDiamondFlare(ctx, 0, 0, spikeWidth * 0.7, spikeLen * 0.45);
+    this.drawDiamondFlare(ctx, 0, 0, spikeLen * 0.44, spikeWidth * 0.68);
+    this.drawDiamondFlare(ctx, 0, 0, spikeWidth * 0.68, spikeLen * 0.44);
     ctx.restore();
 
-    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
+    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
     if (this.lightMode) {
       coreGrad.addColorStop(0, '#111114');
-      coreGrad.addColorStop(0.45, `rgba(${pr}, ${pg}, ${pb}, 0.6)`);
+      coreGrad.addColorStop(0.45, `rgba(${pr}, ${pg}, ${pb}, 0.55)`);
       coreGrad.addColorStop(1, 'rgba(17, 17, 20, 0)');
     } else {
       coreGrad.addColorStop(0, '#F4F2ED');
-      coreGrad.addColorStop(0.42, `rgba(${pr}, ${pg}, ${pb}, 0.85)`);
+      coreGrad.addColorStop(0.42, `rgba(${pr}, ${pg}, ${pb}, 0.8)`);
       coreGrad.addColorStop(1, 'rgba(214, 185, 140, 0)');
     }
     ctx.fillStyle = coreGrad;
     ctx.beginPath();
-    ctx.arc(0, 0, 18, 0, Math.PI * 2);
+    ctx.arc(0, 0, 12, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
