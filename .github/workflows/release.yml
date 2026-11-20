@@ -67,6 +67,10 @@ jobs:
       - name: Install frontend dependencies
         run: npm --prefix frontend install --no-audit --no-fund
 
+      - name: Build frontend assets
+        if: matrix.os_name == 'linux'
+        run: npm --prefix frontend run build
+
       - name: Check Rust compilation (Linux)
         if: matrix.os_name == 'linux'
         run: cargo check --manifest-path src-tauri/Cargo.toml

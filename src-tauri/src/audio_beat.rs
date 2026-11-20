@@ -306,7 +306,7 @@ fn open_audio_capture_stream(
                         let fmt = supported.sample_format();
                         let cfg: cpal::StreamConfig = supported.into();
                         if let Some(stream) =
-                            build_input_stream_for_format(&dev, &cfg, fmt, channels, ring)
+                            build_input_stream_for_format(&dev, &cfg, fmt, channels, Arc::clone(&ring))
                         {
                             return Some((stream, sr));
                         }
