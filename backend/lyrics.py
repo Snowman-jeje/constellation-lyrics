@@ -289,6 +289,45 @@ class LyricsFetcher:
             })
 
         parsed_raw.sort(key=lambda x: x['start_time'])
+        # Estimate song-level vocal cadence (syllables/sec) from active LRC lines
+        def count_syllables(tok: str) -> int:
+            w = tok.lower().strip(".,!?:;'\"-()[]{}")
+            matches = re.findall(r'[aeiouy]+', w)
+            return max(1, len(matches))
+
+        line_rates: List[float] = []
+        for i, item in enumerate(parsed_raw):
+            if i + 1 >= len(parsed_raw):
+                continue
+            gap = parsed_raw[i + 1]['start_time'] - item['start_time']
+            if 0.6 <= gap <= 6.5:
+                clean_raw = re.sub(r'\(.*?\)[,\s]*', ' ', item['raw_content']).strip()
+                clean_text = re.sub(r'<[^>]+>', '', clean_raw).strip()
+                toks = [t for t in clean_text.split() if '(' not in t and ')' not in t and t not in ',.?!:;']
+                if toks:
+                    syls = sum(count_syllables(t) for t in toks)
+                    line_rates.append(syls / gap)
+
+        if line_rates:
+            line_rates.sort()
+            median_rate = line_rates[len(line_rates) // 2]
+        else:
+            median_rate = 3.2
+
+        # Map estimated song BPM/cadence tier to base seconds per syllable
+        if median_rate < 2.3:
+            # Slow ballad (~60-80 BPM)
+            song_sec_per_syl = 0.36
+        elif median_rate < 3.4:
+            # Mid-tempo pop/R&B (~85-115 BPM)
+            song_sec_per_syl = 0.28
+        elif median_rate < 4.6:
+            # Upbeat / fast pop (~120-138 BPM)
+            song_sec_per_syl = 0.21
+        else:
+            # Rapid / rap flow (140+ BPM)
+            song_sec_per_syl = 0.16
+
         lines: List[Dict[str, Any]] = []
 
         for i, item in enumerate(parsed_raw):
@@ -332,28 +371,28 @@ class LyricsFetcher:
                     })
                     continue
 
-            # 2. Syllable-weighted natural vocal cadence pacing (handles fast rap & slow ballads)
+            # 2. Adaptive BPM & syllable-weighted vocal cadence pacing
             clean_text = re.sub(r'<[^>]+>', '', clean_raw).strip()
             clean_text = re.sub(r'\s+', ' ', clean_text).strip()
             tokens = [t for t in clean_text.split() if '(' not in t and ')' not in t and t not in ',.?!:;']
             if not tokens:
                 continue
 
-            def count_syllables(tok: str) -> int:
-                w = tok.lower().strip(".,!?:;'\"-()[]{}")
-                matches = re.findall(r'[aeiouy]+', w)
-                return max(1, len(matches))
-
             syllable_counts = [count_syllables(t) for t in tokens]
             total_syllables = sum(syllable_counts)
 
-            # Natural vocal cadence: ~4.5 syllables/sec in rap/hip-hop
-            rap_pace_dur = total_syllables * 0.22
-            # Bounded within line gap, leaving natural breathing space at the end of the line
-            vocal_dur = max(
-                min(gap_to_next * 0.88, rap_pace_dur),
-                min(gap_to_next * 0.75, 1.2)
-            )
+            # Blend song-level BPM pace with local line density when gap is normal
+            local_sec_per_syl = song_sec_per_syl
+            if 0.6 <= gap_to_next <= 6.0:
+                local_rate = total_syllables / gap_to_next
+                if local_rate > 4.8:
+                    local_sec_per_syl = min(song_sec_per_syl, 0.16)
+                elif local_rate < 2.0 and song_sec_per_syl < 0.30:
+                    local_sec_per_syl = 0.32
+
+            estimated_dur = total_syllables * local_sec_per_syl
+            max_vocal_window = min(gap_to_next * 0.90, max(1.0, gap_to_next - 0.12))
+            vocal_dur = min(max_vocal_window, max(min(gap_to_next * 0.65, 1.0), estimated_dur))
 
             words: List[Dict[str, Any]] = []
             curr_t = start_time

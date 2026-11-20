@@ -1,0 +1,56 @@
+[package]
+name = "constellation-suite"
+version = "3.0.0"
+description = "Constellation Suite desktop visualizer, lyrics constellation, dynamic island, and ambient desktop companion"
+edition = "2021"
+
+[lib]
+name = "constellation_suite_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "process", "net"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+sysinfo = { version = "0.33", default-features = false, features = ["system", "network"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+cpal = "0.15"
+base64 = "0.22"
+md5 = "0.7"
+sha2 = "0.10"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+regex = "1"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.57", features = [
+    "Media_Control",
+    "Foundation",
+    "Foundation_Collections",
+    "Storage_Streams",
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_Power",
+    "Win32_System_Threading",
+    "Win32_System_LibraryLoader",
+    "Win32_System_ProcessStatus",
+    "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_Graphics_Dwm",
+    "Win32_UI_Shell",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus = "4"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true

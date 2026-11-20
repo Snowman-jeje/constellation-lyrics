@@ -1,0 +1,81 @@
+:root {
+  /* Obsidian Atelier Core Palette */
+  --oa-void: #070709;
+  --oa-carbon: #0E0E12;
+  --oa-slate: #15151B;
+  --oa-smoked-glass: rgba(14, 14, 18, 0.74);
+  --oa-ivory: #F4F2ED;
+  --oa-ash: #8E8A82;
+  --oa-gold: #D6B98C;
+
+  /* Hairlines & Inner Highlights */
+  --oa-hairline: rgba(255, 255, 255, 0.08);
+  --oa-hairline-strong: rgba(255, 255, 255, 0.14);
+  --oa-inset-highlight: rgba(255, 255, 255, 0.10);
+
+  /* Typography Stacks */
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Dynamic Adaptive Accent */
+  --oa-accent-r: 214;
+  --oa-accent-g: 185;
+  --oa-accent-b: 140;
+  --oa-accent-rgb: 214, 185, 140;
+  --bg-color: var(--oa-void);
+  --accent-color: rgb(var(--oa-accent-rgb));
+  --accent-glow: rgba(var(--oa-accent-rgb), 0.36);
+
+  /* Motion Easing */
+  --oa-ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+  --oa-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Double-Bezel Machined Hardware Enclosures */
+.bezel-shell {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--oa-hairline);
+  padding: 0.375rem;
+  border-radius: 1.75rem;
+}
+
+.bezel-core {
+  background: rgba(14, 14, 18, 0.9);
+  box-shadow: inset 0 1px 0 var(--oa-inset-highlight);
+  border-radius: calc(1.75rem - 0.375rem);
+}
+
+.bezel-glass {
+  background: var(--oa-smoked-glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+}
+
+.oa-hairline {
+  border: 1px solid var(--oa-hairline);
+}
+
+/* Fixed Film-Grain Overlay (Pointer-Safe, Zero Repaint on Scroll) */
+.oa-film-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.85'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+
+/* Reduced Motion Accessibility Guardrails */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
