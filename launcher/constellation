@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Constellation Suite Launcher
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APPIMAGE="${DIR}/Constellation-Suite.AppImage"
+
+if [ -f "${APPIMAGE}" ]; then
+  exec "${APPIMAGE}" "$@"
+else
+  echo "Error: ${APPIMAGE} not found."
+  exit 1
+fi

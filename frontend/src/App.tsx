@@ -328,6 +328,10 @@ export default function App() {
           setSettingsOpen(false);
           return;
         }
+        if (isFullscreen) {
+          toggleFullscreen();
+          return;
+        }
       }
 
       if (isEditableTarget(e.target)) return;

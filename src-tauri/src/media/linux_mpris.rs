@@ -63,7 +63,11 @@ impl LinuxMprisMonitor {
         let names: Vec<String> = reply.body().deserialize().ok()?;
 
         let mut best: Option<CandidatePlayer> = None;
-        for bus_name in names.into_iter().filter(|n| n.starts_with(MPRIS_PREFIX)) {
+        for bus_name in names.into_iter().filter(|n| {
+            n.starts_with(MPRIS_PREFIX)
+                || n == "org.kde.plasma.browser_integration"
+                || n.starts_with("org.kde.plasma.browser_integration")
+        }) {
             if let Some(cand) = self.query_player(&conn, &bus_name).await {
                 if best.as_ref().map(|b| cand.score > b.score).unwrap_or(true) {
                     best = Some(cand);
@@ -295,12 +299,19 @@ fn clean_art_url(raw: &str) -> String {
     }
 }
 
+fn unwrap_val<'a>(mut val: &'a Value<'a>) -> &'a Value<'a> {
+    while let Value::Value(inner) = val {
+        val = inner.as_ref();
+    }
+    val
+}
+
 fn val_as_string(val: &OwnedValue) -> Option<String> {
     raw_val_as_string(val)
 }
 
 fn raw_val_as_string(val: &Value<'_>) -> Option<String> {
-    match val {
+    match unwrap_val(val) {
         Value::Str(s) => Some(s.as_str().to_string()),
         Value::ObjectPath(p) => Some(p.as_str().to_string()),
         _ => None,
@@ -308,12 +319,12 @@ fn raw_val_as_string(val: &Value<'_>) -> Option<String> {
 }
 
 fn raw_val_as_artist(val: &Value<'_>) -> Option<String> {
-    match val {
+    match unwrap_val(val) {
         Value::Str(s) => Some(s.as_str().to_string()),
         Value::Array(arr) => {
             let mut items = Vec::new();
             for v in arr.iter() {
-                if let Value::Str(s) = v {
+                if let Value::Str(s) = unwrap_val(v) {
                     let t = s.as_str().trim();
                     if !t.is_empty() {
                         items.push(t.to_string());
@@ -335,11 +346,12 @@ fn val_as_i64(val: &OwnedValue) -> Option<i64> {
 }
 
 fn raw_val_as_i64(val: &Value<'_>) -> Option<i64> {
-    match val {
+    match unwrap_val(val) {
         Value::I64(n) => Some(*n),
         Value::U64(n) => i64::try_from(*n).ok(),
         Value::I32(n) => Some(*n as i64),
         Value::U32(n) => Some(*n as i64),
+        Value::F64(f) => Some(*f as i64),
         _ => None,
     }
 }
@@ -352,9 +364,11 @@ fn extract_metadata(val: &OwnedValue) -> (String, String, String, String, f64, O
     let mut length = 0.0_f64;
     let mut track_id = None;
 
-    if let Value::Dict(dict) = &**val {
+    let unwrapped = unwrap_val(val);
+    if let Value::Dict(dict) = unwrapped {
         for (k, v) in dict.iter() {
-            let Value::Str(key) = k else {
+            let key_val = unwrap_val(k);
+            let Value::Str(key) = key_val else {
                 continue;
             };
             match key.as_str() {

@@ -32,13 +32,34 @@ export const GOLD_ACCENT: ColorPalette = { r: 214, g: 185, b: 140 };
  */
 export function resolveLineWords(line: LyricLine, nextLineStart?: number): WordTimestamp[] {
   if (line.words && line.words.length > 0) {
-    return line.words;
+    return line.words.filter(
+      (w) =>
+        w.word &&
+        !w.word.includes('(') &&
+        !w.word.includes(')') &&
+        !w.word.includes('（') &&
+        !w.word.includes('）') &&
+        !w.word.includes('[') &&
+        !w.word.includes(']'),
+    );
   }
 
-  const tokens = (line.text || '')
-    .trim()
+  const sanitizedText = (line.text || '')
+    .replace(/[\(（\[][^\)）\]]*[\)）\]]/g, ' ')
+    .trim();
+
+  const tokens = sanitizedText
     .split(/\s+/)
-    .filter((token) => token.length > 0);
+    .filter(
+      (token) =>
+        token.length > 0 &&
+        !token.includes('(') &&
+        !token.includes(')') &&
+        !token.includes('（') &&
+        !token.includes('）') &&
+        !token.includes('[') &&
+        !token.includes(']'),
+    );
   if (tokens.length === 0) return [];
 
   const start = Number.isFinite(line.start_time) ? line.start_time : 0;

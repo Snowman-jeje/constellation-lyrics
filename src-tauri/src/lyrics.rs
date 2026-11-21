@@ -471,7 +471,8 @@ fn parse_lyricsfile_yaml(raw_yaml: &str) -> Vec<LyricLine> {
         return Vec::new();
     };
 
-    let p_re = PAREN_STRIP.get_or_init(|| Regex::new(r"\([^)]*\)[,\s]*").unwrap());
+    let p_re = PAREN_STRIP
+        .get_or_init(|| Regex::new(r"[\(（\[][^\)）\]]*[\)）\]][,\s]*").unwrap());
     let ws_re = WS_RE.get_or_init(|| Regex::new(r"\s+").unwrap());
 
     let mut lines = Vec::new();
@@ -494,8 +495,8 @@ fn parse_lyricsfile_yaml(raw_yaml: &str) -> Vec<LyricLine> {
             if w_text.is_empty() {
                 continue;
             }
-            let has_open = w_text.contains('(');
-            let has_close = w_text.contains(')');
+            let has_open = w_text.contains('(') || w_text.contains('（') || w_text.contains('[');
+            let has_close = w_text.contains(')') || w_text.contains('）') || w_text.contains(']');
             if has_open && has_close {
                 continue;
             } else if has_open {
@@ -551,7 +552,8 @@ fn parse_lrc(lrc_text: &str) -> (Vec<LyricLine>, bool) {
     let tag_re = LINE_TAG_RE.get_or_init(|| Regex::new(r"\[(\d+:\d+(?:\.\d+)?)\]").unwrap());
     let word_re =
         WORD_TAG_RE.get_or_init(|| Regex::new(r"<(\d+:\d+(?:\.\d+)?)>\s*([^<]+)").unwrap());
-    let p_re = PAREN_STRIP.get_or_init(|| Regex::new(r"\([^)]*\)[,\s]*").unwrap());
+    let p_re = PAREN_STRIP
+        .get_or_init(|| Regex::new(r"[\(（\[][^\)）\]]*[\)）\]][,\s]*").unwrap());
     let angle_re = ANGLE_TAG_STRIP.get_or_init(|| Regex::new(r"<[^>]+>").unwrap());
     let ws_re = WS_RE.get_or_init(|| Regex::new(r"\s+").unwrap());
 
@@ -605,7 +607,15 @@ fn parse_lrc(lrc_text: &str) -> (Vec<LyricLine>, bool) {
             let s2 = angle_re.replace_all(&s1, "");
             let toks: Vec<&str> = s2
                 .split_whitespace()
-                .filter(|t| !t.contains('(') && !t.contains(')') && !is_punct_only(t))
+                .filter(|t| {
+                    !t.contains('(')
+                        && !t.contains(')')
+                        && !t.contains('（')
+                        && !t.contains('）')
+                        && !t.contains('[')
+                        && !t.contains(']')
+                        && !is_punct_only(t)
+                })
                 .collect();
             if !toks.is_empty() {
                 let syls: usize = toks.iter().map(|t| count_syllables(t)).sum();
@@ -661,6 +671,10 @@ fn parse_lrc(lrc_text: &str) -> (Vec<LyricLine>, bool) {
                 if clean_w.is_empty()
                     || clean_w.contains('(')
                     || clean_w.contains(')')
+                    || clean_w.contains('（')
+                    || clean_w.contains('）')
+                    || clean_w.contains('[')
+                    || clean_w.contains(']')
                     || is_punct_only(clean_w)
                 {
                     continue;
@@ -698,7 +712,15 @@ fn parse_lrc(lrc_text: &str) -> (Vec<LyricLine>, bool) {
         let clean_text = ws_re.replace_all(&s2, " ").trim().to_string();
         let tokens: Vec<&str> = clean_text
             .split_whitespace()
-            .filter(|t| !t.contains('(') && !t.contains(')') && !is_punct_only(t))
+            .filter(|t| {
+                !t.contains('(')
+                    && !t.contains(')')
+                    && !t.contains('（')
+                    && !t.contains('）')
+                    && !t.contains('[')
+                    && !t.contains(']')
+                    && !is_punct_only(t)
+            })
             .collect();
         if tokens.is_empty() {
             continue;
