@@ -42,11 +42,11 @@ export function useClockSync(track: TrackInfo | null, lastUpdateAt: number): Clo
     }
 
     const drift = serverPos - positionRef.current;
-    if (Math.abs(drift) >= 0.45) {
+    if (Math.abs(drift) >= 0.18) {
       positionRef.current = serverPos;
       setDisplayPosition(serverPos);
-    } else if (Math.abs(drift) > 0.015) {
-      positionRef.current += drift * 0.22;
+    } else if (Math.abs(drift) > 0.012) {
+      positionRef.current += drift * 0.65;
     }
   }, [track, lastUpdateAt]);
 

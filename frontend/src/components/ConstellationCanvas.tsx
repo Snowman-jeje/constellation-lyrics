@@ -121,7 +121,13 @@ export function ConstellationCanvas({
             const l = lines[i];
             const nextStart =
               i + 1 < lines.length ? lines[i + 1].start_time : l.end_time || l.start_time + 4.5;
-            if (adjustedPos >= l.start_time && adjustedPos < nextStart) {
+            const gap = nextStart - l.start_time;
+            const lineEndLimit =
+              gap > 4.2
+                ? Math.min(nextStart - 0.8, (l.end_time || l.start_time + 3.5) + 1.5)
+                : nextStart;
+
+            if (adjustedPos >= l.start_time && adjustedPos < lineEndLimit) {
               targetLine = l;
               targetNextStart = nextStart;
               break;
@@ -131,14 +137,7 @@ export function ConstellationCanvas({
           if (targetLine && targetLine.line_index !== manager.currentLineIndex) {
             manager.setLine(targetLine, renderer.width, renderer.height, targetNextStart);
           } else if (!targetLine && manager.currentLineIndex !== -1) {
-            const firstLine = lines[0];
-            const lastLine = lines[lines.length - 1];
-            if (
-              adjustedPos < firstLine.start_time ||
-              adjustedPos > (lastLine.end_time || lastLine.start_time + 4.5) + 1.0
-            ) {
-              manager.setLine(null, renderer.width, renderer.height);
-            }
+            manager.setLine(null, renderer.width, renderer.height);
           }
         } else if (manager.currentLineIndex !== -1) {
           manager.setLine(null, renderer.width, renderer.height);

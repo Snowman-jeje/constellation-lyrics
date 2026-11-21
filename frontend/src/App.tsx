@@ -276,12 +276,24 @@ export default function App() {
       const trackKey = track?.title ? `${track.artist} - ${track.title}` : '';
       void persistTrackOffset(next, trackKey)
         .then(() => {
-          pushToast(`Sync offset: ${next >= 0 ? '+' : ''}${next.toFixed(1)}s`, 'success');
+          pushToast(
+            `⚡ Sync Offset: ${next >= 0 ? '+' : ''}${next.toFixed(1)}s (Saved)`,
+            'info',
+          );
         })
         .catch(() => pushToast('Failed to save offset', 'error'));
     },
     [trackOffset, track, persistTrackOffset, pushToast],
   );
+
+  const handleResetOffset = useCallback(() => {
+    const trackKey = track?.title ? `${track.artist} - ${track.title}` : '';
+    void persistTrackOffset(0.0, trackKey)
+      .then(() => {
+        pushToast('⚡ Sync Offset Reset to 0.0s', 'info');
+      })
+      .catch(() => pushToast('Failed to reset offset', 'error'));
+  }, [track, persistTrackOffset, pushToast]);
 
   const handleCycleLyricsStyle = useCallback(() => {
     const idx = LYRIC_STYLE_ORDER.indexOf(settings.lyrics.style);
@@ -352,6 +364,8 @@ export default function App() {
         handleOffsetChange(-0.2);
       } else if (e.key === ']' || e.key === '=') {
         handleOffsetChange(0.2);
+      } else if (e.key === '0' || e.key === 'Backspace') {
+        handleResetOffset();
       }
     };
 
@@ -593,6 +607,7 @@ export default function App() {
         onNext={handleNext}
         onSeek={handleSeek}
         onOffsetChange={handleOffsetChange}
+        onResetOffset={handleResetOffset}
         onCycleLyricsStyle={handleCycleLyricsStyle}
         onOpenMixer={() => setMixerOpen(true)}
         onOpenLock={() => setLockOpen(true)}

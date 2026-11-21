@@ -31,6 +31,7 @@ interface PlayerDockProps {
   onNext: () => void;
   onSeek: (seconds: number) => void;
   onOffsetChange: (delta: number) => void;
+  onResetOffset?: () => void;
   onCycleLyricsStyle: () => void;
   onOpenMixer: () => void;
   onOpenLock: () => void;
@@ -60,6 +61,7 @@ export function PlayerDock({
   onNext,
   onSeek,
   onOffsetChange,
+  onResetOffset,
   onCycleLyricsStyle,
   onOpenMixer,
   onOpenLock,
@@ -173,13 +175,15 @@ export function PlayerDock({
             >
               -0.2
             </button>
-            <span
-              title="Lyric sync offset"
-              className="min-w-[38px] text-center font-mono text-[10px] tabular-nums text-[#F4F2ED]/85"
+            <button
+              type="button"
+              onClick={onResetOffset}
+              title="Reset offset (or press 0 / Backspace)"
+              className="min-w-[42px] cursor-pointer rounded px-1 text-center font-mono text-[10px] tabular-nums text-[#F4F2ED]/85 transition-colors hover:bg-white/[0.08] hover:text-[#F4F2ED]"
             >
               {syncOffset >= 0 ? '+' : ''}
               {syncOffset.toFixed(1)}s
-            </span>
+            </button>
             <button
               type="button"
               onClick={() => onOffsetChange(0.2)}

@@ -62,6 +62,7 @@ impl LyricsFetcher {
     pub fn sanitize_title(title: &str) -> String {
         static PAREN_RE: OnceLock<Regex> = OnceLock::new();
         static BRACKET_RE: OnceLock<Regex> = OnceLock::new();
+        static FEAT_RE: OnceLock<Regex> = OnceLock::new();
         static TRAILING_RE: OnceLock<Regex> = OnceLock::new();
         static WS_RE: OnceLock<Regex> = OnceLock::new();
 
@@ -70,20 +71,24 @@ impl LyricsFetcher {
         }
 
         let p_re = PAREN_RE.get_or_init(|| {
-            Regex::new(r"(?i)\([^)]*(official|audio|video|lyrics?|feat\.?|ft\.?|remaster|visualizer|expanded|deluxe)[^)]*\)").unwrap()
+            Regex::new(r"(?i)[\(（][^\)）]*(official|audio|video|lyrics?|feat\.?|ft\.?|remaster|visualizer|expanded|deluxe|version|clip|mv|hd|4k)[^\)）]*[\)）]").unwrap()
         });
         let b_re = BRACKET_RE.get_or_init(|| {
-            Regex::new(r"(?i)\[[^\]]*(official|audio|video|lyrics?|feat\.?|ft\.?|remaster|visualizer|expanded|deluxe)[^\]]*\]").unwrap()
+            Regex::new(r"(?i)\[[^\]]*(official|audio|video|lyrics?|feat\.?|ft\.?|remaster|visualizer|expanded|deluxe|version|clip|mv|hd|4k)[^\]]*\]").unwrap()
+        });
+        let feat_re = FEAT_RE.get_or_init(|| {
+            Regex::new(r"(?i)\s+(?:feat\.?|ft\.?|featuring|with)\s+.*$").unwrap()
         });
         let t_re = TRAILING_RE.get_or_init(|| {
-            Regex::new(r"(?i)\s*-\s*(official|audio|video|lyrics?|remastered).*$").unwrap()
+            Regex::new(r"(?i)\s*-\s*(official|audio|video|lyrics?|remastered|music\s*video|visualizer).*$").unwrap()
         });
         let ws_re = WS_RE.get_or_init(|| Regex::new(r"\s+").unwrap());
 
         let s1 = p_re.replace_all(title, "");
         let s2 = b_re.replace_all(&s1, "");
-        let s3 = t_re.replace_all(&s2, "");
-        let cleaned = ws_re.replace_all(&s3, " ").trim().to_string();
+        let s3 = feat_re.replace_all(&s2, "");
+        let s4 = t_re.replace_all(&s3, "");
+        let cleaned = ws_re.replace_all(&s4, " ").trim().to_string();
         if cleaned.is_empty() {
             title.trim().to_string()
         } else {
@@ -152,6 +157,17 @@ impl LyricsFetcher {
             artist_candidates.push(String::new());
         }
 
+        let mut candidate_titles = vec![clean_title.clone()];
+        if clean_title.contains(" - ") {
+            let parts: Vec<&str> = clean_title.splitn(2, " - ").collect();
+            if parts.len() == 2 {
+                let sub = parts[1].trim().to_string();
+                if !sub.is_empty() && !candidate_titles.contains(&sub) {
+                    candidate_titles.push(sub);
+                }
+            }
+        }
+
         let cache_file = self.cache_path(&artist_candidates[0], &clean_title, duration);
         if let Ok(raw) = fs::read_to_string(&cache_file) {
             if let Ok(cached) = serde_json::from_str::<LyricsData>(&raw) {
@@ -159,18 +175,22 @@ impl LyricsFetcher {
             }
         }
 
-        let queries = [
-            format!("{} {}", artist_candidates[0], clean_title)
-                .trim()
-                .to_string(),
-            clean_title.clone(),
-        ];
+        let mut queries = Vec::new();
+        for t in &candidate_titles {
+            let q1 = format!("{} {}", artist_candidates[0], t).trim().to_string();
+            if !q1.is_empty() && !queries.contains(&q1) {
+                queries.push(q1);
+            }
+            if !t.is_empty() && !queries.contains(t) {
+                queries.push(t.clone());
+            }
+        }
 
         let mut best_cand_id: Option<u64> = None;
         let mut best_score = f64::NEG_INFINITY;
         let mut best_fallback_plain: Option<LrcLibApiItem> = None;
 
-        for query in queries {
+        for query in &queries {
             if query.is_empty() {
                 continue;
             }
@@ -190,29 +210,17 @@ impl LyricsFetcher {
                 continue;
             };
 
-            let has_synced_any = results
-                .iter()
-                .any(|r| r.synced_lyrics.as_deref().map(|s| !s.trim().is_empty()).unwrap_or(false));
-            let has_word_any = results.iter().any(|r| {
-                r.has_word_sync == Some(true)
-                    && r.synced_lyrics
-                        .as_deref()
-                        .map(|s| !s.trim().is_empty())
-                        .unwrap_or(false)
-            });
-
             for item in results {
                 let has_synced = item
                     .synced_lyrics
                     .as_deref()
                     .map(|s| !s.trim().is_empty())
-                    .unwrap_or(false);
-                if has_synced_any && !has_synced {
-                    continue;
-                }
-                if has_word_any && item.has_word_sync != Some(true) {
-                    continue;
-                }
+                    .unwrap_or(false)
+                    || item
+                        .lyricsfile
+                        .as_deref()
+                        .map(|s| !s.trim().is_empty())
+                        .unwrap_or(false);
 
                 if !has_synced {
                     let has_plain = item
@@ -226,19 +234,21 @@ impl LyricsFetcher {
                     continue;
                 }
 
-                let cand_score = score_lrclib_candidate(
-                    &item,
-                    &clean_title,
-                    &artist_candidates[0],
-                    duration,
-                );
-                if cand_score > best_score {
-                    best_score = cand_score;
-                    best_cand_id = item.id;
+                for t in &candidate_titles {
+                    let cand_score = score_lrclib_candidate(
+                        &item,
+                        t,
+                        &artist_candidates[0],
+                        duration,
+                    );
+                    if cand_score > best_score {
+                        best_score = cand_score;
+                        best_cand_id = item.id;
+                    }
                 }
             }
 
-            if best_cand_id.is_some() && best_score >= 450.0 {
+            if best_cand_id.is_some() && best_score >= 420.0 {
                 break;
             }
         }
@@ -257,41 +267,65 @@ impl LyricsFetcher {
         }
 
         if full_payload.is_none() {
-            for cand_artist in &artist_candidates {
-                let mut req = self.client.get("https://lrclib.net/api/get").query(&[
-                    ("track_name", clean_title.as_str()),
-                    ("artist_name", cand_artist.as_str()),
-                ]);
-                let dur_str;
-                if duration > 0.0 {
-                    dur_str = (duration.round() as i64).to_string();
-                    req = req.query(&[("duration", dur_str.as_str())]);
-                }
-                if let Ok(resp) = req.send().await {
-                    if resp.status().is_success() {
-                        if let Ok(item) = resp.json::<LrcLibApiItem>().await {
-                            let has_sync = item
-                                .synced_lyrics
-                                .as_deref()
-                                .map(|s| !s.trim().is_empty())
-                                .unwrap_or(false)
-                                || item
-                                    .lyricsfile
-                                    .as_deref()
-                                    .map(|s| !s.trim().is_empty())
-                                    .unwrap_or(false);
-                            if has_sync {
-                                full_payload = Some(item);
-                                break;
-                            }
-                            if best_fallback_plain.is_none()
-                                && item
-                                    .plain_lyrics
+            'fallback_loop: for t in &candidate_titles {
+                for cand_artist in &artist_candidates {
+                    // Try with duration first
+                    let mut req = self.client.get("https://lrclib.net/api/get").query(&[
+                        ("track_name", t.as_str()),
+                        ("artist_name", cand_artist.as_str()),
+                    ]);
+                    if duration > 0.0 {
+                        let dur_str = (duration.round() as i64).to_string();
+                        req = req.query(&[("duration", dur_str.as_str())]);
+                    }
+                    if let Ok(resp) = req.send().await {
+                        if resp.status().is_success() {
+                            if let Ok(item) = resp.json::<LrcLibApiItem>().await {
+                                let has_sync = item
+                                    .synced_lyrics
                                     .as_deref()
                                     .map(|s| !s.trim().is_empty())
                                     .unwrap_or(false)
-                            {
-                                best_fallback_plain = Some(item);
+                                    || item
+                                        .lyricsfile
+                                        .as_deref()
+                                        .map(|s| !s.trim().is_empty())
+                                        .unwrap_or(false);
+                                if has_sync {
+                                    full_payload = Some(item);
+                                    break 'fallback_loop;
+                                }
+                                if best_fallback_plain.is_none() && item.plain_lyrics.is_some() {
+                                    best_fallback_plain = Some(item);
+                                }
+                            }
+                        }
+                    }
+
+                    // Try without duration if not found (covers YouTube Music intro/outro length differences)
+                    if duration > 0.0 {
+                        let req_no_dur = self.client.get("https://lrclib.net/api/get").query(&[
+                            ("track_name", t.as_str()),
+                            ("artist_name", cand_artist.as_str()),
+                        ]);
+                        if let Ok(resp) = req_no_dur.send().await {
+                            if resp.status().is_success() {
+                                if let Ok(item) = resp.json::<LrcLibApiItem>().await {
+                                    let has_sync = item
+                                        .synced_lyrics
+                                        .as_deref()
+                                        .map(|s| !s.trim().is_empty())
+                                        .unwrap_or(false)
+                                        || item
+                                            .lyricsfile
+                                            .as_deref()
+                                            .map(|s| !s.trim().is_empty())
+                                            .unwrap_or(false);
+                                    if has_sync {
+                                        full_payload = Some(item);
+                                        break 'fallback_loop;
+                                    }
+                                }
                             }
                         }
                     }
@@ -320,8 +354,21 @@ fn score_lrclib_candidate(
     duration: f64,
 ) -> f64 {
     let mut score = 0.0;
+    if item
+        .synced_lyrics
+        .as_deref()
+        .map(|s| !s.trim().is_empty())
+        .unwrap_or(false)
+        || item
+            .lyricsfile
+            .as_deref()
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false)
+    {
+        score += 250.0;
+    }
     if item.has_word_sync == Some(true) {
-        score += 500.0;
+        score += 150.0;
     }
 
     let cand_title = item
@@ -341,7 +388,7 @@ fn score_lrclib_candidate(
         if cand_title == norm_title {
             score += 220.0;
         } else if cand_title.contains(&norm_title) || norm_title.contains(&cand_title) {
-            score += 110.0;
+            score += 120.0;
         }
     }
     if !norm_artist.is_empty() {
@@ -356,9 +403,14 @@ fn score_lrclib_candidate(
         if let Some(cand_dur) = item.duration {
             if cand_dur > 0.0 {
                 let diff = (cand_dur - duration).abs();
-                score -= diff * 12.0;
                 if diff < 3.0 {
-                    score += 100.0;
+                    score += 120.0;
+                } else if diff < 8.0 {
+                    score += 60.0;
+                } else if diff < 20.0 {
+                    score -= diff * 2.0;
+                } else {
+                    score -= 40.0 + (diff - 20.0).min(30.0) * 1.5;
                 }
             }
         }
@@ -730,24 +782,24 @@ fn parse_lrc(lrc_text: &str) -> (Vec<LyricLine>, bool) {
         let total_syllables: usize = syllable_counts.iter().sum::<usize>().max(1);
 
         let mut local_sec_per_syl = song_sec_per_syl;
-        if (0.6..=6.0).contains(&gap_to_next) {
-            let local_rate = (total_syllables as f64) / gap_to_next;
-            if local_rate > 4.8 {
-                local_sec_per_syl = song_sec_per_syl.min(0.16);
-            } else if local_rate < 2.0 && song_sec_per_syl < 0.30 {
+        if gap_to_next > 0.5 {
+            let line_tempo = (total_syllables as f64) / gap_to_next;
+            if line_tempo > 3.6 {
+                local_sec_per_syl = (gap_to_next * 0.88) / (total_syllables as f64);
+            } else if line_tempo < 1.8 && song_sec_per_syl < 0.32 {
                 local_sec_per_syl = 0.32;
             }
         }
 
         let estimated_dur = (total_syllables as f64) * local_sec_per_syl;
-        let max_vocal_window = (gap_to_next * 0.90).min((gap_to_next - 0.12).max(1.0));
-        let min_vocal_window = (gap_to_next * 0.65).min(1.0);
-        let vocal_dur = estimated_dur.max(min_vocal_window).min(max_vocal_window);
+        let max_vocal_window = (gap_to_next * 0.88).min((gap_to_next - 0.20).max(0.6));
+        let min_vocal_window = (gap_to_next * 0.55).min(1.2);
+        let vocal_dur = estimated_dur.clamp(min_vocal_window, max_vocal_window);
 
         let mut words = Vec::with_capacity(tokens.len());
         let mut curr_t = start_time;
         for (tok, syl) in tokens.into_iter().zip(syllable_counts.into_iter()) {
-            let w_dur = ((syl as f64) / (total_syllables as f64) * vocal_dur).max(0.08);
+            let w_dur = ((syl as f64) / (total_syllables as f64) * vocal_dur).max(0.12);
             words.push(WordTimestamp {
                 word: tok.to_string(),
                 start: round3(curr_t),
