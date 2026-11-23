@@ -4,15 +4,23 @@ Cross-platform desktop music visualizer, synced lyrics constellation, Dynamic Is
 
 ## Download
 
-Download the latest native installers directly from [GitHub Releases (v3.1.0)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
+Download the latest native installers directly from [GitHub Releases (v3.1.2)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
 
 | Platform | Package | Download |
 | :--- | :--- | :--- |
-| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation Suite_3.1.0_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.0/Constellation.Suite_3.1.0_x64-setup.exe) |
-| **Linux (Debian / Ubuntu)** | `.deb` Package | [Browse v3.1.0 `.deb` on Releases](https://github.com/Snowman-jeje/constellation-lyrics/releases/tag/v3.1.0) |
-| **Linux (Universal)** | `.AppImage` | [Browse v3.1.0 `.AppImage` on Releases](https://github.com/Snowman-jeje/constellation-lyrics/releases/tag/v3.1.0) |
+| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.2_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.2/Constellation.Suite_3.1.2_x64-setup.exe) |
+| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.2_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.2/Constellation.Suite_3.1.2_amd64.deb) |
+| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.2_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.2/Constellation.Suite_3.1.2_amd64.AppImage) |
 
 All release binaries include `checksums-windows.txt` and `checksums-linux.txt` for SHA-256 verification, and the app checks for new releases automatically via the built-in updater.
+
+### What's New in v3.1.2
+- **Enhanced YouTube Music & Browser Matching**: Automatic cleaning of video prefixes/suffixes (`[MV]`, `(Official Audio)`, `feat.`) and smart splitting of `"Artist - Title"` formats. Added relaxed duration query fallback for music videos with intros/outros.
+- **Ultra-Responsive Clock PLL**: Re-tuned Phase-Locked Loop filter factor from `0.22` to `0.65` and reduced snap threshold to `0.18s`, eliminating playback lag and audio drift.
+- **Adaptive Rap Cadence & Word Spacing**: Dynamic syllable calculation with natural vocal spacing (`gap * 0.88`, min word duration `0.12s`) preventing rap lyrics from rushing.
+- **Instrumental Gap Fade-out**: Lyrics smoothly fade out during long musical interludes (>4.2s) rather than remaining frozen on screen.
+- **On-Screen Offset HUD & Reset**: Real-time toast feedback on offset changes, plus one-click offset reset button in dock and keyboard shortcuts (`0` / `Backspace`).
+- **Linux Fullscreen & MPRIS Fixes**: Borderless true fullscreen mode on Linux desktop environments and robust D-Bus MPRIS browser integration (`plasma-browser-integration`, Chrome, Firefox).
 
 ## Features
 
@@ -49,6 +57,7 @@ flowchart TD
 - `Space`: Play / Pause
 - `ArrowRight` / `ArrowLeft`: Next / Previous track
 - `[` / `-` and `]` / `=`: Adjust lyric sync offset (`-0.2s` / `+0.2s`)
+- `0` or `Backspace`: Reset lyric sync offset to `+0.0s`
 - `Ctrl+,`: Toggle Luxury Settings Hub
 - `Ctrl+Shift+L`: Toggle Ambient Lock Mode
 - `F11` or `F`: Toggle Fullscreen
