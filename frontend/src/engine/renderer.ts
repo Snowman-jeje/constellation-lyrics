@@ -189,11 +189,14 @@ export class ConstellationRenderer {
       const w2 = words[edge.to];
       if (!w1 || !w2 || !w1.revealed || !w2.revealed) continue;
 
+      const isFacet = !!edge.isFacet;
       ctx.beginPath();
       ctx.moveTo(w1.x, w1.y);
       ctx.lineTo(w2.x, w2.y);
-      ctx.strokeStyle = `rgba(${strokeBase}, ${0.16 * alpha})`;
-      ctx.lineWidth = 1.0;
+      ctx.strokeStyle = isFacet
+        ? `rgba(${strokeBase}, ${0.08 * alpha})`
+        : `rgba(${strokeBase}, ${0.16 * alpha})`;
+      ctx.lineWidth = isFacet ? 0.8 : 1.0;
       ctx.stroke();
     }
 
@@ -255,10 +258,16 @@ export class ConstellationRenderer {
       ctx.moveTo(w1.x, w1.y);
       ctx.lineTo(currentX, currentY);
 
-      if (isLineActive) {
+      if (edge.isFacet) {
         ctx.strokeStyle = this.lightMode
-          ? `rgba(${pr}, ${pg}, ${pb}, ${0.7 * edge.progress})`
-          : `rgba(244, 242, 237, ${0.62 * edge.progress})`;
+          ? `rgba(17, 17, 20, ${0.11 * edge.progress})`
+          : `rgba(244, 242, 237, ${0.14 * edge.progress})`;
+        ctx.lineWidth = 0.85;
+        ctx.shadowBlur = 0;
+      } else if (isLineActive) {
+        ctx.strokeStyle = this.lightMode
+          ? `rgba(${pr}, ${pg}, ${pb}, ${0.72 * edge.progress})`
+          : `rgba(244, 242, 237, ${0.68 * edge.progress})`;
         ctx.lineWidth = 1.6;
         ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.25 : 0.78})`;
         ctx.shadowBlur = 10;

@@ -4,15 +4,26 @@ Cross-platform desktop music visualizer, synced lyrics constellation, Dynamic Is
 
 ## Download
 
-Download the latest native installers directly from [GitHub Releases (v3.1.2)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
+Download the latest native installers directly from [GitHub Releases (v3.1.3)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
 
 | Platform | Package | Download |
 | :--- | :--- | :--- |
-| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.2_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.2/Constellation.Suite_3.1.2_x64-setup.exe) |
-| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.2_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.2/Constellation.Suite_3.1.2_amd64.deb) |
-| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.2_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.2/Constellation.Suite_3.1.2_amd64.AppImage) |
+| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.3_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.3/Constellation.Suite_3.1.3_x64-setup.exe) |
+| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.3_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.3/Constellation.Suite_3.1.3_amd64.deb) |
+| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.3_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.3/Constellation.Suite_3.1.3_amd64.AppImage) |
 
 All release binaries include `checksums-windows.txt` and `checksums-linux.txt` for SHA-256 verification, and the app checks for new releases automatically via the built-in updater.
+
+### What's New in v3.1.3
+- **5 Procedural Abstract Constellations**: Lyric lines now dynamically adopt distinct celestial geometries per line:
+  - *Spiral Nebula*: Logarithmic galactic whirl expanding outward from the canvas core.
+  - *Astrolabe Orbit*: Dual concentric intersecting elliptical orbital tracks.
+  - *Diagonal Shatter*: Crisp fractal zig-zag slash across the celestial canvas.
+  - *Polyhedral Facet Cluster*: Golden-ratio phyllotaxis faceted geometric crystal cluster.
+  - *Freeform Astronomical Constellation*: Asymmetrical star maps styled after real IAU constellations (Cassiopeia, Cygnus).
+- **Celestial Facet Mesh**: Delicate secondary geometric facet edges connect nearest non-adjacent star clusters with fine starlight styling, producing an authentic astrological sky chart aesthetic.
+- **Elliptical Text Margin Relaxation Solver**: 6-pass physical collision solver accounting for the true width of word labels, guaranteeing words never collide or overlap even in tight spiral centers.
+- **Horizontal Lyric Readability**: Text remains strictly upright and horizontal for effortless sing-along reading.
 
 ### What's New in v3.1.2
 - **Enhanced YouTube Music & Browser Matching**: Automatic cleaning of video prefixes/suffixes (`[MV]`, `(Official Audio)`, `feat.`) and smart splitting of `"Artist - Title"` formats. Added relaxed duration query fallback for music videos with intros/outros.
