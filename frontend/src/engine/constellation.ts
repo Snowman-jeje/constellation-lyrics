@@ -167,8 +167,66 @@ export class ConstellationManager {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 
-    const isRapidFlow = count >= 8 || cadence >= 2.8;
     const patternType = Math.abs(hash) % 5;
+    const centerX = minX + spanX * 0.5;
+
+    // Celestial templates for Pattern 4 (True 2D Astronomical Constellations)
+    const getConstellationAnchor = (p: number, rot: number) => {
+      // 4 IAU-inspired 2D celestial silhouettes
+      const subType = Math.abs(hash >> 3) % 4;
+      let rx = 0;
+      let ry = 0;
+      if (subType === 0) {
+        // Cygnus / Northern Cross (Center, North, South, East, West)
+        const crossAnchors = [
+          { x: 0, y: -0.42 }, // North
+          { x: 0, y: 0 },     // Center
+          { x: -0.38, y: -0.05 }, // West wing
+          { x: 0.38, y: -0.05 },  // East wing
+          { x: 0, y: 0.40 },  // South
+        ];
+        const seg = Math.min(crossAnchors.length - 2, Math.floor(p * (crossAnchors.length - 1)));
+        const t = (p * (crossAnchors.length - 1)) - seg;
+        rx = crossAnchors[seg].x + t * (crossAnchors[seg + 1].x - crossAnchors[seg].x);
+        ry = crossAnchors[seg].y + t * (crossAnchors[seg + 1].y - crossAnchors[seg].y);
+      } else if (subType === 1) {
+        // Orion Hourglass Belt
+        const orionAnchors = [
+          { x: -0.32, y: -0.38 }, // Betelgeuse
+          { x: 0.32, y: -0.34 },  // Bellatrix
+          { x: -0.10, y: -0.02 }, // Belt 1
+          { x: 0.10, y: 0.02 },   // Belt 2
+          { x: -0.28, y: 0.38 },  // Saiph
+          { x: 0.30, y: 0.36 },   // Rigel
+        ];
+        const seg = Math.min(orionAnchors.length - 2, Math.floor(p * (orionAnchors.length - 1)));
+        const t = (p * (orionAnchors.length - 1)) - seg;
+        rx = orionAnchors[seg].x + t * (orionAnchors[seg + 1].x - orionAnchors[seg].x);
+        ry = orionAnchors[seg].y + t * (orionAnchors[seg + 1].y - orionAnchors[seg].y);
+      } else if (subType === 2) {
+        // Corona Borealis (Celestial Crown Arc)
+        const arcTheta = Math.PI * 0.15 + p * Math.PI * 0.70;
+        rx = Math.cos(arcTheta) * 0.42;
+        ry = Math.sin(arcTheta) * 0.38 - 0.12;
+      } else {
+        // Cassiopeia / Asymmetric Stellar Zigzag
+        const cassAnchors = [
+          { x: -0.38, y: -0.30 },
+          { x: -0.16, y: 0.32 },
+          { x: 0.04, y: -0.20 },
+          { x: 0.22, y: 0.28 },
+          { x: 0.40, y: -0.26 },
+        ];
+        const seg = Math.min(cassAnchors.length - 2, Math.floor(p * (cassAnchors.length - 1)));
+        const t = (p * (cassAnchors.length - 1)) - seg;
+        rx = cassAnchors[seg].x + t * (cassAnchors[seg + 1].x - cassAnchors[seg].x);
+        ry = cassAnchors[seg].y + t * (cassAnchors[seg + 1].y - cassAnchors[seg].y);
+      }
+      return {
+        x: rx * Math.cos(rot) - ry * Math.sin(rot),
+        y: rx * Math.sin(rot) + ry * Math.cos(rot),
+      };
+    };
 
     const newWords: WordNode[] = [];
     for (let i = 0; i < count; i++) {
@@ -177,95 +235,67 @@ export class ConstellationManager {
       const r2 = prng(hash + i * 37);
       const progress = count > 1 ? i / (count - 1) : 0.5;
 
-      let posX = minX + spanX * 0.5;
+      let posX = centerX;
       let posY = centerY;
 
       if (count === 1) {
-        posX = minX + spanX * 0.5;
+        posX = centerX;
         posY = centerY;
-      } else if (isRapidFlow) {
-        // High cadence rap flow: dynamic sweeping celestial curve with fast forward momentum
-        posX = minX + progress * spanX + (r1 - 0.5) * (spanX / count) * 0.45;
-        const wave = Math.sin(progress * Math.PI * 2.4 + (hash % 6)) * (spanY * 0.32);
-        const microJitter = (r2 - 0.5) * (spanY * 0.16);
-        posY = centerY + wave + microJitter;
       } else if (patternType === 0) {
-        // Pattern 0: Spiral Nebula (Logarithmic Galactic Whirl)
+        // Pattern 0: Spiral Nebula (360-degree Logarithmic Galactic Whirl)
         const dir = hash % 2 === 0 ? 1 : -1;
-        const totalRevolutions = 1.35 + 0.35 * ((hash >> 1) % 3);
-        const theta0 = ((hash % 12) / 12) * Math.PI * 2;
+        const totalRevolutions = 1.45 + 0.55 * prng(hash + 11);
+        const theta0 = prng(hash + 3) * Math.PI * 2;
         const theta = theta0 + dir * progress * Math.PI * 2 * totalRevolutions;
-        const maxRadius = Math.min(spanX * 0.44, spanY * 0.46);
-        const minRadius = Math.max(28, maxRadius * 0.16);
-        const radius = minRadius + Math.pow(progress, 0.82) * (maxRadius - minRadius);
+        const maxRadius = Math.min(spanX * 0.45, spanY * 0.46);
+        const minRadius = Math.max(26, maxRadius * 0.14);
+        const radius = minRadius + Math.pow(progress, 0.78) * (maxRadius - minRadius);
 
-        posX = minX + spanX * 0.5 + Math.cos(theta) * radius * 1.08;
+        posX = centerX + Math.cos(theta) * radius * 1.12;
         posY = centerY + Math.sin(theta) * radius * 0.88;
       } else if (patternType === 1) {
-        // Pattern 1: Astrolabe Orbit (Concentric Ellipses)
-        const tiltAngle = (((hash % 7) - 3) * Math.PI) / 18;
-        const orbitAngle = ((hash % 8) / 8) * Math.PI * 2 + (progress - 0.5) * Math.PI * 1.85;
-        const trackTier = i % 2 === 0 ? 0.74 : 1.08;
-        const a = spanX * 0.38 * trackTier;
-        const b = spanY * 0.36 * trackTier;
+        // Pattern 1: Astrolabe Dual Orbits (Full 360-degree tilted concentric rings)
+        const tiltAngle = prng(hash + 5) * Math.PI;
+        const trackTier = i % 2 === 0 ? 0.68 : 1.05;
+        const a = spanX * 0.40 * trackTier;
+        const b = spanY * 0.38 * trackTier;
+        const orbitDir = (hash >> 1) % 2 === 0 ? 1 : -1;
+        const orbitAngle = prng(hash + 7) * Math.PI * 2 + orbitDir * progress * Math.PI * 2;
         const rawX = Math.cos(orbitAngle) * a;
         const rawY = Math.sin(orbitAngle) * b;
 
-        posX = minX + spanX * 0.5 + rawX * Math.cos(tiltAngle) - rawY * Math.sin(tiltAngle);
+        posX = centerX + rawX * Math.cos(tiltAngle) - rawY * Math.sin(tiltAngle);
         posY = centerY + rawX * Math.sin(tiltAngle) + rawY * Math.cos(tiltAngle);
       } else if (patternType === 2) {
-        // Pattern 2: Diagonal Celestial Shatter (Fractal Zig-Zag Vector)
-        const dirX = hash % 2 === 0 ? 1 : -1;
-        const dirY = (hash >> 2) % 2 === 0 ? 1 : -1;
-        const startX = dirX > 0 ? minX + spanX * 0.08 : maxX - spanX * 0.08;
-        const endX = dirX > 0 ? maxX - spanX * 0.08 : minX + spanX * 0.08;
-        const startY = dirY > 0 ? minY + spanY * 0.10 : maxY - spanY * 0.10;
-        const endY = dirY > 0 ? maxY - spanY * 0.10 : minY + spanY * 0.10;
+        // Pattern 2: Diagonal/Vertical Shatter (Isotropic 2D Vector with sharp zig-zag)
+        // Can traverse along ANY random angle (top-to-bottom, bottom-to-top, diagonal, etc.)
+        const angle = ((hash % 16) / 16) * Math.PI * 2;
+        const mainAxisLen = Math.min(spanX * 0.85, spanY * 0.88);
+        const distAlongMain = (progress - 0.5) * mainAxisLen;
+        const perpAmp = (i % 2 === 0 ? -1 : 1) * (0.24 + 0.28 * r2) * Math.min(spanX, spanY) * 0.38;
 
-        const lineX = startX + progress * (endX - startX);
-        const lineY = startY + progress * (endY - startY);
+        const dirMainX = Math.cos(angle);
+        const dirMainY = Math.sin(angle);
+        const perpX = -dirMainY;
+        const perpY = dirMainX;
 
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const len = Math.hypot(dx, dy) || 1;
-        const nx = -dy / len;
-        const ny = dx / len;
-
-        const zigSign = i % 2 === 0 ? -1 : 1;
-        const amplitude = (0.22 + 0.28 * r2) * spanY * 0.42;
-        posX = lineX + nx * zigSign * amplitude;
-        posY = lineY + ny * zigSign * amplitude;
+        posX = centerX + dirMainX * distAlongMain + perpX * perpAmp;
+        posY = centerY + dirMainY * distAlongMain + perpY * perpAmp;
       } else if (patternType === 3) {
-        // Pattern 3: Polyhedral Facet Cluster (Geometric Delaunay Jewel)
-        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-        const maxR = Math.min(spanX * 0.42, spanY * 0.44);
+        // Pattern 3: Polyhedral Facet Cluster (Golden-Angle Star Crystal Lattice)
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~137.5 degrees
+        const maxR = Math.min(spanX * 0.44, spanY * 0.45);
         const clusterRadius = maxR * Math.sqrt((i + 1) / count);
-        const theta = i * goldenAngle + ((hash % 10) / 10) * Math.PI * 2;
+        const theta = i * goldenAngle + prng(hash + 9) * Math.PI * 2;
 
-        posX = minX + spanX * 0.5 + Math.cos(theta) * clusterRadius * 1.15 + (r1 - 0.5) * 24;
-        posY = centerY + Math.sin(theta) * clusterRadius * 0.88 + (r2 - 0.5) * 24;
+        posX = centerX + Math.cos(theta) * clusterRadius * 1.15 + (r1 - 0.5) * 20;
+        posY = centerY + Math.sin(theta) * clusterRadius * 0.88 + (r2 - 0.5) * 20;
       } else {
-        // Pattern 4: Freeform Astronomical Constellation (Cassiopeia / Cygnus Map)
-        const segmentCount = 4;
-        const seg = Math.min(segmentCount - 1, Math.floor(progress * segmentCount));
-        const segT = progress * segmentCount - seg;
-
-        const anchors = [
-          { x: minX + spanX * 0.06, y: centerY + (hash % 3 === 0 ? -1 : 1) * spanY * 0.38 },
-          { x: minX + spanX * 0.32, y: centerY + (hash % 2 === 0 ? 1 : -1) * spanY * 0.28 },
-          { x: minX + spanX * 0.52, y: centerY + (hash % 4 === 0 ? -1 : 1) * spanY * 0.42 },
-          { x: minX + spanX * 0.74, y: centerY + (hash % 2 === 0 ? -1 : 1) * spanY * 0.26 },
-          { x: minX + spanX * 0.94, y: centerY + (hash % 3 === 0 ? 1 : -1) * spanY * 0.36 },
-        ];
-
-        const pA = anchors[seg];
-        const pB = anchors[seg + 1] || anchors[seg];
-
-        const interpX = pA.x + segT * (pB.x - pA.x);
-        const interpY = pA.y + segT * (pB.y - pA.y);
-
-        posX = interpX + (r1 - 0.5) * (spanX * 0.08);
-        posY = interpY + (r2 - 0.5) * (spanY * 0.16);
+        // Pattern 4: True 2D Astronomical Constellations (Cygnus, Orion, Corona, Cassiopeia)
+        const rot = prng(hash + 13) * Math.PI * 2;
+        const anchor = getConstellationAnchor(progress, rot);
+        posX = centerX + anchor.x * spanX + (r1 - 0.5) * 24;
+        posY = centerY + anchor.y * spanY + (r2 - 0.5) * 24;
       }
 
       const targetX = Math.max(minX, Math.min(maxX, posX));
@@ -403,7 +433,8 @@ export class ConstellationManager {
           w.revealProgress = Math.max(w.revealProgress, 0.45);
         }
         w.revealProgress += (1.0 - w.revealProgress) * Math.min(1, dt * revealRate);
-      } else {
+      } else if (currentPosition < w.start - 0.75) {
+        // Only un-reveal if seeking backwards by more than 0.75s
         w.revealed = false;
         w.revealProgress = 0.0;
       }

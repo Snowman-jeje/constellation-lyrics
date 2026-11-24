@@ -4,15 +4,20 @@ Cross-platform desktop music visualizer, synced lyrics constellation, Dynamic Is
 
 ## Download
 
-Download the latest native installers directly from [GitHub Releases (v3.1.3)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
+Download the latest native installers directly from [GitHub Releases (v3.1.4)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
 
 | Platform | Package | Download |
 | :--- | :--- | :--- |
-| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.3_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.3/Constellation.Suite_3.1.3_x64-setup.exe) |
-| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.3_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.3/Constellation.Suite_3.1.3_amd64.deb) |
-| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.3_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.3/Constellation.Suite_3.1.3_amd64.AppImage) |
+| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.4_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.4/Constellation.Suite_3.1.4_x64-setup.exe) |
+| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.4_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.4/Constellation.Suite_3.1.4_amd64.deb) |
+| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.4_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.4/Constellation.Suite_3.1.4_amd64.AppImage) |
 
 All release binaries include `checksums-windows.txt` and `checksums-linux.txt` for SHA-256 verification, and the app checks for new releases automatically via the built-in updater.
+
+### What's New in v3.1.4
+- **True 360-Degree Non-Linear Formations**: Removed linear constraint overriding long lines. All lyric lines now expand into genuine multi-directional 2D astronomical constellations (Spiral Nebula, Astrolabe Orbit, Isotropic Diagonal/Vertical Shatter, Sacred Crystal Lattice, and Cygnus/Orion/Corona/Cassiopeia star charts).
+- **Butter-Smooth Monotonic Clock PLL**: Eliminated jittery snap jumps (`Math.abs(drift) < 1.0s` now smoothly slews monotonically), ensuring the lyric progression flows with 60/120fps fluid continuity without stuttering.
+- **Word Reveal Hysteresis & Spring Clamping**: Added backward hysteresis preventing word flickering on minor millisecond fluctuations, alongside clamped reticle spring agility for graceful long-distance leaps.
 
 ### What's New in v3.1.3
 - **5 Procedural Abstract Constellations**: Lyric lines now dynamically adopt distinct celestial geometries per line:

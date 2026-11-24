@@ -375,9 +375,15 @@ export class ConstellationRenderer {
         const ax = omega * omega * dx - damping * this.reticleVx;
         const ay = omega * omega * dy - damping * this.reticleVy;
 
-        const subDt = Math.min(0.05, dt);
+        const subDt = Math.min(0.04, dt);
         this.reticleVx += ax * subDt;
         this.reticleVy += ay * subDt;
+        const curV = Math.hypot(this.reticleVx, this.reticleVy);
+        const maxV = 2800;
+        if (curV > maxV) {
+          this.reticleVx = (this.reticleVx / curV) * maxV;
+          this.reticleVy = (this.reticleVy / curV) * maxV;
+        }
         this.reticleX += this.reticleVx * subDt;
         this.reticleY += this.reticleVy * subDt;
 

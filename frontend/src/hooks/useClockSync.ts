@@ -42,11 +42,20 @@ export function useClockSync(track: TrackInfo | null, lastUpdateAt: number): Clo
     }
 
     const drift = serverPos - positionRef.current;
-    if (Math.abs(drift) >= 0.18) {
+    if (Math.abs(drift) >= 1.0) {
+      // User seek or new track: snap immediately
       positionRef.current = serverPos;
       setDisplayPosition(serverPos);
-    } else if (Math.abs(drift) > 0.012) {
-      positionRef.current += drift * 0.65;
+    } else if (Math.abs(drift) > 0.03) {
+      // Gentle proportional slewing: smooth convergence without sudden stutters
+      // Ensure time never jumps backward during smooth playback
+      const correction = drift * 0.08;
+      if (drift < 0) {
+        // Slow down slightly rather than stepping backwards
+        positionRef.current += Math.max(correction, -0.015);
+      } else {
+        positionRef.current += Math.min(correction, 0.025);
+      }
     }
   }, [track, lastUpdateAt]);
 
