@@ -265,22 +265,22 @@ export class ConstellationRenderer {
 
       if (edge.isFacet) {
         ctx.strokeStyle = this.lightMode
-          ? `rgba(17, 17, 20, ${0.11 * edge.progress})`
-          : `rgba(244, 242, 237, ${0.14 * edge.progress})`;
-        ctx.lineWidth = 0.85;
+          ? `rgba(17, 17, 20, ${0.15 * edge.progress})`
+          : `rgba(244, 242, 237, ${0.20 * edge.progress})`;
+        ctx.lineWidth = 1.05;
         ctx.shadowBlur = 0;
       } else if (isLineActive) {
         ctx.strokeStyle = this.lightMode
-          ? `rgba(${pr}, ${pg}, ${pb}, ${0.72 * edge.progress})`
-          : `rgba(244, 242, 237, ${0.68 * edge.progress})`;
-        ctx.lineWidth = 1.6;
-        ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.25 : 0.78})`;
-        ctx.shadowBlur = 10;
+          ? `rgba(${pr}, ${pg}, ${pb}, ${0.82 * edge.progress})`
+          : `rgba(244, 242, 237, ${0.78 * edge.progress})`;
+        ctx.lineWidth = 2.2;
+        ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.30 : 0.85})`;
+        ctx.shadowBlur = 14;
       } else {
         ctx.strokeStyle = this.lightMode
-          ? `rgba(17, 17, 20, ${0.2 * edge.progress})`
-          : `rgba(244, 242, 237, ${0.24 * edge.progress})`;
-        ctx.lineWidth = 1.0;
+          ? `rgba(17, 17, 20, ${0.28 * edge.progress})`
+          : `rgba(244, 242, 237, ${0.34 * edge.progress})`;
+        ctx.lineWidth = 1.35;
         ctx.shadowBlur = 0;
       }
       ctx.stroke();

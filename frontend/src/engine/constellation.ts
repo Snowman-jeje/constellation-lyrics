@@ -146,11 +146,11 @@ export class ConstellationManager {
     const cadence = count / lineDuration;
     this.currentCadence = cadence;
 
-    const minX = width * 0.12;
-    const maxX = width * 0.88;
-    const minY = height * 0.22;
-    const maxY = height * 0.72;
-    const centerY = height * 0.47;
+    const minX = width * 0.085;
+    const maxX = width * 0.93;
+    const minY = height * 0.11;
+    const maxY = height * 0.80;
+    const centerY = height * 0.455;
 
     const spanX = Math.max(120, maxX - minX);
     const spanY = Math.max(100, maxY - minY);
@@ -247,23 +247,21 @@ export class ConstellationManager {
         posX = centerX;
         posY = centerY;
       } else if (patternType === 0) {
-        // Pattern 0: Spiral Nebula (360-degree Logarithmic Galactic Whirl)
+        // Pattern 0: Spiral Nebula (Full-Canvas 360-degree Elliptical Galactic Whirl)
         const dir = hash % 2 === 0 ? 1 : -1;
         const totalRevolutions = 1.45 + 0.55 * prng(hash + 11);
         const theta0 = prng(hash + 3) * Math.PI * 2;
         const theta = theta0 + dir * progress * Math.PI * 2 * totalRevolutions;
-        const maxRadius = Math.min(spanX * 0.45, spanY * 0.46);
-        const minRadius = Math.max(26, maxRadius * 0.14);
-        const radius = minRadius + Math.pow(progress, 0.78) * (maxRadius - minRadius);
+        const radialScale = 0.16 + 0.84 * Math.pow(progress, 0.78);
 
-        posX = centerX + Math.cos(theta) * radius * 1.12;
-        posY = centerY + Math.sin(theta) * radius * 0.88;
+        posX = centerX + Math.cos(theta) * (spanX * 0.46) * radialScale;
+        posY = centerY + Math.sin(theta) * (spanY * 0.47) * radialScale;
       } else if (patternType === 1) {
-        // Pattern 1: Astrolabe Dual Orbits (Full 360-degree tilted concentric rings)
+        // Pattern 1: Astrolabe Dual Orbits (Full-Canvas tilted concentric rings)
         const tiltAngle = prng(hash + 5) * Math.PI;
-        const trackTier = i % 2 === 0 ? 0.68 : 1.05;
-        const a = spanX * 0.40 * trackTier;
-        const b = spanY * 0.38 * trackTier;
+        const trackTier = i % 2 === 0 ? 0.72 : 1.06;
+        const a = spanX * 0.44 * trackTier;
+        const b = spanY * 0.44 * trackTier;
         const orbitDir = (hash >> 1) % 2 === 0 ? 1 : -1;
         const orbitAngle = prng(hash + 7) * Math.PI * 2 + orbitDir * progress * Math.PI * 2;
         const rawX = Math.cos(orbitAngle) * a;
@@ -272,35 +270,34 @@ export class ConstellationManager {
         posX = centerX + rawX * Math.cos(tiltAngle) - rawY * Math.sin(tiltAngle);
         posY = centerY + rawX * Math.sin(tiltAngle) + rawY * Math.cos(tiltAngle);
       } else if (patternType === 2) {
-        // Pattern 2: Diagonal/Vertical Shatter (Isotropic 2D Vector with sharp zig-zag)
-        // Can traverse along ANY random angle (top-to-bottom, bottom-to-top, diagonal, etc.)
+        // Pattern 2: Diagonal/Vertical Shatter (Full-Canvas Isotropic 2D Vector with sharp zig-zag)
         const angle = ((hash % 16) / 16) * Math.PI * 2;
-        const mainAxisLen = Math.min(spanX * 0.85, spanY * 0.88);
-        const distAlongMain = (progress - 0.5) * mainAxisLen;
-        const perpAmp = (i % 2 === 0 ? -1 : 1) * (0.24 + 0.28 * r2) * Math.min(spanX, spanY) * 0.38;
-
         const dirMainX = Math.cos(angle);
         const dirMainY = Math.sin(angle);
         const perpX = -dirMainY;
         const perpY = dirMainX;
 
-        posX = centerX + dirMainX * distAlongMain + perpX * perpAmp;
-        posY = centerY + dirMainY * distAlongMain + perpY * perpAmp;
+        const reachX = spanX * 0.45;
+        const reachY = spanY * 0.46;
+        const distNorm = (progress - 0.5) * 2.0; // -1 to +1
+        const zigAmp = (i % 2 === 0 ? -1 : 1) * (0.28 + 0.28 * r2);
+
+        posX = centerX + dirMainX * distNorm * reachX + perpX * zigAmp * reachX * 0.65;
+        posY = centerY + dirMainY * distNorm * reachY + perpY * zigAmp * reachY * 0.85;
       } else if (patternType === 3) {
-        // Pattern 3: Polyhedral Facet Cluster (Golden-Angle Star Crystal Lattice)
+        // Pattern 3: Polyhedral Facet Cluster (Full-Canvas Golden-Angle Star Crystal Lattice)
         const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~137.5 degrees
-        const maxR = Math.min(spanX * 0.44, spanY * 0.45);
-        const clusterRadius = maxR * Math.sqrt((i + 1) / count);
+        const radialScale = Math.sqrt((i + 1) / count);
         const theta = i * goldenAngle + prng(hash + 9) * Math.PI * 2;
 
-        posX = centerX + Math.cos(theta) * clusterRadius * 1.15 + (r1 - 0.5) * 20;
-        posY = centerY + Math.sin(theta) * clusterRadius * 0.88 + (r2 - 0.5) * 20;
+        posX = centerX + Math.cos(theta) * (spanX * 0.47) * radialScale + (r1 - 0.5) * 24;
+        posY = centerY + Math.sin(theta) * (spanY * 0.47) * radialScale + (r2 - 0.5) * 24;
       } else {
         // Pattern 4: True 2D Astronomical Constellations (Cygnus, Orion, Corona, Cassiopeia)
         const rot = prng(hash + 13) * Math.PI * 2;
         const anchor = getConstellationAnchor(progress, rot);
-        posX = centerX + anchor.x * spanX + (r1 - 0.5) * 24;
-        posY = centerY + anchor.y * spanY + (r2 - 0.5) * 24;
+        posX = centerX + anchor.x * spanX * 1.08 + (r1 - 0.5) * 28;
+        posY = centerY + anchor.y * spanY * 1.08 + (r2 - 0.5) * 28;
       }
 
       const targetX = Math.max(minX, Math.min(maxX, posX));
@@ -372,7 +369,7 @@ export class ConstellationManager {
         const dx = newWords[i].x - newWords[j].x;
         const dy = newWords[i].y - newWords[j].y;
         const dist = Math.hypot(dx, dy);
-        if (dist < spanX * 0.44) {
+        if (dist < Math.hypot(spanX, spanY) * 0.42) {
           candidates.push({ idx: j, dist });
         }
       }
