@@ -4,13 +4,13 @@ Cross-platform desktop music visualizer, synced lyrics constellation, Dynamic Is
 
 ## Download
 
-Download the latest native installers directly from [GitHub Releases (v3.1.6)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
+Download the latest native installers directly from [GitHub Releases (v3.1.7)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
 
 | Platform | Package | Download |
 | :--- | :--- | :--- |
-| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.6_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.6/Constellation.Suite_3.1.6_x64-setup.exe) |
-| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.6_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.6/Constellation.Suite_3.1.6_amd64.deb) |
-| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.6_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.6/Constellation.Suite_3.1.6_amd64.AppImage) |
+| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.7_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.7/Constellation.Suite_3.1.7_x64-setup.exe) |
+| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.7_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.7/Constellation.Suite_3.1.7_amd64.deb) |
+| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.7_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.7/Constellation.Suite_3.1.7_amd64.AppImage) |
 
 All release binaries include `checksums-windows.txt` and `checksums-linux.txt` for SHA-256 verification, and the app checks for new releases automatically via the built-in updater.
 

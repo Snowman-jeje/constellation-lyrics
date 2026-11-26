@@ -53,6 +53,7 @@ export class ConstellationManager {
   ambientStars: AmbientStar[] = [];
   private layoutWidth = 0;
   private layoutHeight = 0;
+  private lastPatternType = -1;
 
   constructor() {
     this.initAmbientStars(95);
@@ -154,7 +155,7 @@ export class ConstellationManager {
     const spanX = Math.max(120, maxX - minX);
     const spanY = Math.max(100, maxY - minY);
 
-    let hash = 0;
+    let hash = lineData.line_index * 2654435761;
     for (let i = 0; i < lineData.text.length; i++) {
       hash = (hash << 5) - hash + lineData.text.charCodeAt(i);
       hash |= 0;
@@ -167,7 +168,11 @@ export class ConstellationManager {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 
-    const patternType = Math.abs(hash) % 5;
+    let patternType = Math.abs(hash) % 5;
+    if (patternType === this.lastPatternType) {
+      patternType = (patternType + 1 + (Math.abs(hash >> 2) % 4)) % 5;
+    }
+    this.lastPatternType = patternType;
     const centerX = minX + spanX * 0.5;
 
     // Celestial templates for Pattern 4 (True 2D Astronomical Constellations)

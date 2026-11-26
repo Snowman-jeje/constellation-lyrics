@@ -297,7 +297,10 @@ export class ConstellationRenderer {
 
     let baseActiveFont = 54;
     let baseInactiveFont = 34;
-    if (count >= 14) {
+    if (count >= 16) {
+      baseActiveFont = 36;
+      baseInactiveFont = 23;
+    } else if (count >= 14) {
       baseActiveFont = 40;
       baseInactiveFont = 26;
     } else if (count >= 10) {

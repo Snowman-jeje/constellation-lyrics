@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ConstellationManager } from '../engine/constellation';
-import { usePrefersReducedMotion } from '../engine/lyricTiming';
+import { resolveLineWords, usePrefersReducedMotion } from '../engine/lyricTiming';
 import { ConstellationRenderer } from '../engine/renderer';
 import type { ColorPalette, LyricLine, LyricsData } from '../types/music';
 
@@ -117,20 +117,65 @@ export function ConstellationCanvas({
           let targetLine: LyricLine | null = null;
           let targetNextStart: number | undefined;
 
-          for (let i = 0; i < lines.length; i++) {
-            const l = lines[i];
-            const nextStart =
-              i + 1 < lines.length ? lines[i + 1].start_time : l.end_time || l.start_time + 4.5;
-            const gap = nextStart - l.start_time;
-            const lineEndLimit =
-              gap > 4.2
-                ? Math.min(nextStart - 0.8, (l.end_time || l.start_time + 3.5) + 1.5)
-                : nextStart;
+          let i = 0;
+          while (i < lines.length) {
+            const lineA = lines[i];
+            const lineB = i + 1 < lines.length ? lines[i + 1] : null;
 
-            if (adjustedPos >= l.start_time && adjustedPos < lineEndLimit) {
-              targetLine = l;
-              targetNextStart = nextStart;
-              break;
+            let paired = false;
+            if (lineB) {
+              const gapBetweenStarts = lineB.start_time - lineA.start_time;
+              const estimatedEndA = lineA.end_time || lineA.start_time + 3.0;
+              const pauseBetween = lineB.start_time - estimatedEndA;
+              const wordsA = resolveLineWords(lineA, lineB.start_time);
+              const nextAfterB =
+                i + 2 < lines.length
+                  ? lines[i + 2].start_time
+                  : lineB.end_time || lineB.start_time + 4.5;
+              const wordsB = resolveLineWords(lineB, nextAfterB);
+
+              if (
+                gapBetweenStarts <= 5.5 &&
+                pauseBetween <= 2.5 &&
+                wordsA.length + wordsB.length <= 18
+              ) {
+                paired = true;
+                const gapAfterB = nextAfterB - lineB.start_time;
+                const pairEndLimit =
+                  gapAfterB > 4.2
+                    ? Math.min(nextAfterB - 0.8, (lineB.end_time || lineB.start_time + 3.5) + 1.5)
+                    : nextAfterB;
+
+                if (adjustedPos >= lineA.start_time && adjustedPos < pairEndLimit) {
+                  targetLine = {
+                    ...lineA,
+                    text: `${lineA.text} ${lineB.text}`,
+                    end_time: lineB.end_time || nextAfterB,
+                    words: [...wordsA, ...wordsB],
+                  };
+                  targetNextStart = nextAfterB;
+                  break;
+                }
+                i += 2;
+              }
+            }
+
+            if (!paired) {
+              const nextStart = lineB
+                ? lineB.start_time
+                : lineA.end_time || lineA.start_time + 4.5;
+              const gap = nextStart - lineA.start_time;
+              const lineEndLimit =
+                gap > 4.2
+                  ? Math.min(nextStart - 0.8, (lineA.end_time || lineA.start_time + 3.5) + 1.5)
+                  : nextStart;
+
+              if (adjustedPos >= lineA.start_time && adjustedPos < lineEndLimit) {
+                targetLine = lineA;
+                targetNextStart = nextStart;
+                break;
+              }
+              i += 1;
             }
           }
 
