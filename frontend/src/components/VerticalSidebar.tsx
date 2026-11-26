@@ -21,23 +21,25 @@ export function VerticalSidebar({ track, palette }: VerticalSidebarProps) {
   const accent = getCalibratedAccent(palette);
 
   return (
-    <aside className="pointer-events-none fixed inset-y-0 left-[2.2vw] z-10 hidden sm:flex flex-col items-center justify-center gap-4">
-      <span
-        className="h-8 w-[1px] shrink-0 opacity-40 transition-colors duration-1000"
-        style={{ backgroundColor: accent.css }}
-      />
-      <span
-        className="vertical-sidebar-text block max-h-[64vh] overflow-hidden text-ellipsis whitespace-nowrap font-display text-[clamp(0.68rem,1vw,0.9rem)] uppercase tracking-[0.34em] transition-[color,opacity] duration-1000"
-        style={{
-          color: `rgba(${accent.rgb}, 0.78)`,
-        }}
-      >
-        {label}
-      </span>
-      <span
-        className="h-8 w-[1px] shrink-0 opacity-40 transition-colors duration-1000"
-        style={{ backgroundColor: accent.css }}
-      />
+    <aside className="pointer-events-none fixed inset-y-0 left-[2.2vw] z-10 hidden w-6 sm:flex items-center justify-center">
+      <div className="flex shrink-0 -rotate-90 items-center gap-4 whitespace-nowrap">
+        <span
+          className="h-[1px] w-8 shrink-0 opacity-40 transition-colors duration-1000"
+          style={{ backgroundColor: accent.css }}
+        />
+        <span
+          className="max-w-[64vh] truncate pl-[0.34em] font-display text-[clamp(0.68rem,1vw,0.9rem)] uppercase tracking-[0.34em] transition-[color,opacity] duration-1000"
+          style={{
+            color: `rgba(${accent.rgb}, 0.78)`,
+          }}
+        >
+          {label}
+        </span>
+        <span
+          className="h-[1px] w-8 shrink-0 opacity-40 transition-colors duration-1000"
+          style={{ backgroundColor: accent.css }}
+        />
+      </div>
     </aside>
   );
 }
