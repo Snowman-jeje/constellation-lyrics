@@ -13,6 +13,8 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { isTauriRuntime, getCalibratedAccent, safeInvoke, safeListen } from '../../store/tauriBridge';
+
+declare const __APP_VERSION__: string;
 import { useSuiteStore } from '../../store/useSuiteStore';
 import type { ColorPalette } from '../../types/music';
 import type {
@@ -1232,7 +1234,7 @@ export function LuxurySettingsHub({
 
                         <div className="flex items-center justify-between gap-2 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
                           <span className="font-mono text-[11px] tabular-nums text-[#8E8A82]">
-                            v{updateInfo?.current_version ?? '3.1.0'}
+                            v{updateInfo?.current_version ?? (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '3.1.4')}
                           </span>
                           <div className="flex items-center gap-1.5">
                             <button

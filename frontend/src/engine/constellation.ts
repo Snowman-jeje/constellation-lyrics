@@ -64,7 +64,7 @@ export class ConstellationManager {
       this.ambientStars.push({
         x: Math.random(),
         y: Math.random(),
-        size: Math.random() * 1.7 + 0.55,
+        size: Math.random() * 2.3 + 1.0,
         alpha: Math.random() * 0.65 + 0.2,
         twinkleSpeed: Math.random() * 0.025 + 0.008,
         phase: Math.random() * Math.PI * 2,

@@ -229,9 +229,14 @@ export class ConstellationRenderer {
       const sy = star.y * this.height;
 
       ctx.fillStyle = `rgba(${starColor}, ${Math.max(0, Math.min(1, alpha * baseOpacity))})`;
-      ctx.beginPath();
-      ctx.arc(sx, sy, star.size, 0, Math.PI * 2);
-      ctx.fill();
+      if (star.size > 2.4) {
+        this.drawDiamondFlare(ctx, sx, sy, star.size * 2.2, star.size * 0.45);
+        this.drawDiamondFlare(ctx, sx, sy, star.size * 0.45, star.size * 2.2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(sx, sy, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
   }
 
@@ -320,10 +325,19 @@ export class ConstellationRenderer {
       ctx.translate(w.x, w.y);
       ctx.globalAlpha = progress;
 
-      const starRadius = (w.active ? 5.8 : 3.8) * scale;
+      const starRadius = (w.active ? 9.5 : 6.2) * scale;
+      const flareLen = (w.active ? 22 : 13.5) * scale;
+      const flareWidth = (w.active ? 3.8 : 2.4) * scale;
+
       ctx.fillStyle = w.active ? activeInk : nodeInactiveInk;
+      if (w.active && !this.lightMode) {
+        ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, 0.85)`;
+        ctx.shadowBlur = 16;
+      }
+      this.drawDiamondFlare(ctx, 0, 0, flareLen, flareWidth);
+      this.drawDiamondFlare(ctx, 0, 0, flareWidth, flareLen);
       ctx.beginPath();
-      ctx.arc(0, 0, starRadius, 0, Math.PI * 2);
+      ctx.arc(0, 0, starRadius * 0.65, 0, Math.PI * 2);
       ctx.fill();
 
       const fontSize = Math.round(
@@ -339,11 +353,11 @@ export class ConstellationRenderer {
           ctx.shadowBlur = 24 * glow;
         }
         ctx.fillStyle = activeInk;
-        ctx.fillText(w.word, 0, 22);
+        ctx.fillText(w.word, 0, 28);
       } else {
         ctx.shadowBlur = 0;
         ctx.fillStyle = inactiveInk;
-        ctx.fillText(w.word, 0, 15);
+        ctx.fillText(w.word, 0, 19);
       }
 
       ctx.restore();
@@ -413,33 +427,33 @@ export class ConstellationRenderer {
     ctx.translate(this.reticleX, this.reticleY);
     ctx.globalAlpha = this.reticleAlpha;
 
-    const ringRadius = 22 + (this.reducedMotion ? 0 : Math.sin(time * 3) * 1.6) + this.beat * 3.5;
+    const ringRadius = 30 + (this.reducedMotion ? 0 : Math.sin(time * 3) * 2.2) + this.beat * 4.5;
     ctx.strokeStyle = this.lightMode
       ? `rgba(${pr}, ${pg}, ${pb}, 0.48)`
       : 'rgba(244, 242, 237, 0.48)';
-    ctx.lineWidth = 1.15;
+    ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    const pulse = this.reducedMotion ? 1.0 : 1.0 + Math.sin(time * 4) * 0.08 + this.beat * 0.12;
-    const spikeLen = 34 * pulse;
-    const spikeWidth = 3.0;
+    const pulse = this.reducedMotion ? 1.0 : 1.0 + Math.sin(time * 4) * 0.08 + this.beat * 0.14;
+    const spikeLen = 54 * pulse;
+    const spikeWidth = 4.6;
 
     ctx.fillStyle = this.lightMode ? '#111114' : '#F4F2ED';
-    ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.25 : 0.85})`;
-    ctx.shadowBlur = this.lightMode ? 10 : 20;
+    ctx.shadowColor = `rgba(${pr}, ${pg}, ${pb}, ${this.lightMode ? 0.28 : 0.88})`;
+    ctx.shadowBlur = this.lightMode ? 12 : 24;
 
     this.drawDiamondFlare(ctx, 0, 0, spikeLen, spikeWidth);
     this.drawDiamondFlare(ctx, 0, 0, spikeWidth, spikeLen);
 
     ctx.save();
     ctx.rotate(Math.PI / 4);
-    this.drawDiamondFlare(ctx, 0, 0, spikeLen * 0.44, spikeWidth * 0.68);
-    this.drawDiamondFlare(ctx, 0, 0, spikeWidth * 0.68, spikeLen * 0.44);
+    this.drawDiamondFlare(ctx, 0, 0, spikeLen * 0.46, spikeWidth * 0.72);
+    this.drawDiamondFlare(ctx, 0, 0, spikeWidth * 0.72, spikeLen * 0.46);
     ctx.restore();
 
-    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
+    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
     if (this.lightMode) {
       coreGrad.addColorStop(0, '#111114');
       coreGrad.addColorStop(0.45, `rgba(${pr}, ${pg}, ${pb}, 0.55)`);
@@ -451,7 +465,7 @@ export class ConstellationRenderer {
     }
     ctx.fillStyle = coreGrad;
     ctx.beginPath();
-    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+    ctx.arc(0, 0, 18, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();

@@ -4,15 +4,20 @@ Cross-platform desktop music visualizer, synced lyrics constellation, Dynamic Is
 
 ## Download
 
-Download the latest native installers directly from [GitHub Releases (v3.1.4)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
+Download the latest native installers directly from [GitHub Releases (v3.1.5)](https://github.com/Snowman-jeje/constellation-lyrics/releases/latest):
 
 | Platform | Package | Download |
 | :--- | :--- | :--- |
-| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.4_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.4/Constellation.Suite_3.1.4_x64-setup.exe) |
-| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.4_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.4/Constellation.Suite_3.1.4_amd64.deb) |
-| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.4_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.4/Constellation.Suite_3.1.4_amd64.AppImage) |
+| **Windows (x64)** | NSIS Installer (`.exe`) | [Constellation.Suite_3.1.5_x64-setup.exe](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.5/Constellation.Suite_3.1.5_x64-setup.exe) |
+| **Linux (Debian / Ubuntu)** | `.deb` Package | [Constellation.Suite_3.1.5_amd64.deb](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.5/Constellation.Suite_3.1.5_amd64.deb) |
+| **Linux (Universal)** | `.AppImage` | [Constellation.Suite_3.1.5_amd64.AppImage](https://github.com/Snowman-jeje/constellation-lyrics/releases/download/v3.1.5/Constellation.Suite_3.1.5_amd64.AppImage) |
 
 All release binaries include `checksums-windows.txt` and `checksums-linux.txt` for SHA-256 verification, and the app checks for new releases automatically via the built-in updater.
+
+### What's New in v3.1.5
+- **Enlarged 4-Point Star Nodes & Reticle**: Word star nodes are now larger 4-point diamond flares (`13.5px`–`22px`) with glowing cores, accompanied by an enlarged `54px` active reticle flare and brighter background sparkles.
+- **Clean Horizontal Top-Left Track Badge**: Replaced sideways vertical sidebar text with a crisp horizontal track title/artist display at top-left (`Constellation Suite` when idle).
+- **Dynamic App Version Display**: Settings panel now reads the exact build version directly from `package.json` instead of showing a stale fallback.
 
 ### What's New in v3.1.4
 - **True 360-Degree Non-Linear Formations**: Removed linear constraint overriding long lines. All lyric lines now expand into genuine multi-directional 2D astronomical constellations (Spiral Nebula, Astrolabe Orbit, Isotropic Diagonal/Vertical Shatter, Sacred Crystal Lattice, and Cygnus/Orion/Corona/Cassiopeia star charts).
