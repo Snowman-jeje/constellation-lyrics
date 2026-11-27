@@ -391,50 +391,24 @@ export class ConstellationManager {
   }
 
   private triggerOutgoing(): void {
-    if (this.words.length === 0) return;
-    this.outgoingWords = this.words.map((w) => ({
-      ...w,
-      vx: (Math.random() - 0.5) * 22,
-      vy: -Math.random() * 20 - 6,
-    }));
-    this.outgoingEdges = [...this.edges];
-    this.outgoingAlpha = 0.78;
+    this.outgoingWords = [];
+    this.outgoingEdges = [];
+    this.outgoingAlpha = 0.0;
   }
 
-  update(currentPosition: number, dt: number, reducedMotion = false): void {
+  update(currentPosition: number, _dt: number, reducedMotion = false): void {
     const time = performance.now() * 0.001;
-
-    if (this.outgoingAlpha > 0.01) {
-      this.outgoingAlpha -= dt * 2.2;
-      if (!reducedMotion) {
-        for (const w of this.outgoingWords) {
-          w.x += w.vx * dt;
-          w.y += w.vy * dt;
-        }
-      }
-    } else {
-      this.outgoingAlpha = 0.0;
-      this.outgoingWords = [];
-      this.outgoingEdges = [];
-    }
 
     let activeIdx = -1;
     const cadence = this.currentCadence || 2.0;
     const agilityMultiplier = Math.max(1.0, Math.min(2.8, cadence / 2.2));
-    const revealRate = reducedMotion ? 60 : 22 * agilityMultiplier;
-    const scaleRate = reducedMotion ? 60 : 16 * agilityMultiplier;
-    const glowRate = reducedMotion ? 60 : 14 * agilityMultiplier;
-    const edgeRate = reducedMotion ? 60 : 18 * agilityMultiplier;
 
     for (let i = 0; i < this.words.length; i++) {
       const w = this.words[i];
 
       if (currentPosition >= w.start) {
-        if (!w.revealed) {
-          w.revealed = true;
-          w.revealProgress = Math.max(w.revealProgress, 0.45);
-        }
-        w.revealProgress += (1.0 - w.revealProgress) * Math.min(1, dt * revealRate);
+        w.revealed = true;
+        w.revealProgress = 1.0;
       } else if (currentPosition < w.start - 0.75) {
         // Only un-reveal if seeking backwards by more than 0.75s
         w.revealed = false;
@@ -449,7 +423,7 @@ export class ConstellationManager {
         w.x = w.baseX;
         w.y = w.baseY;
       } else {
-        const amp = agilityMultiplier > 1.4 ? 2.8 : 4.5;
+        const amp = agilityMultiplier > 1.4 ? 2.4 : 3.8;
         w.x = w.baseX + Math.sin(time * 0.8 + w.phase) * amp;
         w.y = w.baseY + Math.cos(time * 0.7 + w.phase) * amp;
       }
@@ -470,21 +444,14 @@ export class ConstellationManager {
       const w = this.words[i];
       const isActive = i === activeIdx && w.revealed;
       w.active = isActive;
-
-      const targetScale = isActive ? 1.32 : 1.0;
-      const targetGlow = isActive ? 1.0 : 0.0;
-      w.activeScale += (targetScale - w.activeScale) * Math.min(1, dt * scaleRate);
-      w.glowIntensity += (targetGlow - w.glowIntensity) * Math.min(1, dt * glowRate);
+      w.activeScale = isActive ? 1.32 : 1.0;
+      w.glowIntensity = isActive ? 1.0 : 0.0;
     }
 
     for (const edge of this.edges) {
       const wFrom = this.words[edge.from];
       const wTo = this.words[edge.to];
-      if (wFrom && wTo && wFrom.revealed && wTo.revealed) {
-        edge.progress += (1.0 - edge.progress) * Math.min(1, dt * edgeRate);
-      } else {
-        edge.progress = 0.0;
-      }
+      edge.progress = wFrom && wTo && wFrom.revealed && wTo.revealed ? 1.0 : 0.0;
     }
   }
 

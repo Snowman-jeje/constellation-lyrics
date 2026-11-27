@@ -113,7 +113,7 @@ export function ConstellationCanvas({
         const currentLyrics = lyricsRef.current;
 
         if (currentLyrics && currentLyrics.has_synced && currentLyrics.lines.length > 0) {
-          const lines = currentLyrics.lines;
+          const lines = currentLyrics.lines.filter((l) => (l.text || '').trim().length > 0);
           let targetLine: LyricLine | null = null;
           let targetNextStart: number | undefined;
 
@@ -141,9 +141,11 @@ export function ConstellationCanvas({
               ) {
                 paired = true;
                 const gapAfterB = nextAfterB - lineB.start_time;
+                const silenceAfter =
+                  nextAfterB - Math.max(lineB.end_time || 0, lineB.start_time + 3.5);
                 const pairEndLimit =
-                  gapAfterB > 4.2
-                    ? Math.min(nextAfterB - 0.8, (lineB.end_time || lineB.start_time + 3.5) + 1.5)
+                  silenceAfter > 5.0 || gapAfterB > 9.0
+                    ? Math.min(nextAfterB - 0.5, (lineB.end_time || lineB.start_time + 3.5) + 1.2)
                     : nextAfterB;
 
                 if (adjustedPos >= lineA.start_time && adjustedPos < pairEndLimit) {
@@ -165,9 +167,11 @@ export function ConstellationCanvas({
                 ? lineB.start_time
                 : lineA.end_time || lineA.start_time + 4.5;
               const gap = nextStart - lineA.start_time;
+              const silenceAfter =
+                nextStart - Math.max(lineA.end_time || 0, lineA.start_time + 3.5);
               const lineEndLimit =
-                gap > 4.2
-                  ? Math.min(nextStart - 0.8, (lineA.end_time || lineA.start_time + 3.5) + 1.5)
+                silenceAfter > 5.0 || gap > 9.0
+                  ? Math.min(nextStart - 0.5, (lineA.end_time || lineA.start_time + 3.5) + 1.2)
                   : nextStart;
 
               if (adjustedPos >= lineA.start_time && adjustedPos < lineEndLimit) {
