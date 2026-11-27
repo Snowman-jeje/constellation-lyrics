@@ -455,11 +455,23 @@ export class ConstellationManager {
     }
   }
 
-  getActiveWordPosition(): { x: number; y: number; word: string } | null {
+  getActiveWordPosition(): {
+    x: number;
+    y: number;
+    word: string;
+    wordIndex: number;
+    lineIndex: number;
+  } | null {
     if (this.activeWordIndex >= 0 && this.activeWordIndex < this.words.length) {
       const w = this.words[this.activeWordIndex];
       if (w.revealed) {
-        return { x: w.x, y: w.y, word: w.word };
+        return {
+          x: w.x,
+          y: w.y,
+          word: w.word,
+          wordIndex: this.activeWordIndex,
+          lineIndex: this.currentLineIndex,
+        };
       }
     }
     return null;

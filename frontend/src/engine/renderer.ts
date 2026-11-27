@@ -22,6 +22,11 @@ export class ConstellationRenderer {
 
   private reticleX = -100;
   private reticleY = -100;
+  private reticleFromX = -100;
+  private reticleFromY = -100;
+  private reticleProgress = 1.0;
+  private reticleLineIndex = -1;
+  private reticleWordIndex = -1;
   private reticleAlpha = 0.0;
 
   private primaryColor: ColorPalette = { ...GOLD_ACCENT };
@@ -142,7 +147,7 @@ export class ConstellationRenderer {
     ctx.fillRect(0, 0, w, h);
   }
 
-  private renderMainCanvas(_dt: number, time: number): void {
+  private renderMainCanvas(dt: number, time: number): void {
     const ctx = this.ctx;
     const w = this.width;
     const h = this.height;
@@ -151,7 +156,7 @@ export class ConstellationRenderer {
 
     this.renderBackgroundStars(ctx, time);
     this.renderEdges(ctx);
-    this.renderReticle(ctx, time);
+    this.renderReticle(ctx, dt, time);
     this.renderWords(ctx);
   }
 
@@ -308,18 +313,46 @@ export class ConstellationRenderer {
     }
   }
 
-  private renderReticle(ctx: CanvasRenderingContext2D, time: number): void {
+  private renderReticle(ctx: CanvasRenderingContext2D, dt: number, time: number): void {
     const activeTarget = this.manager.getActiveWordPosition();
     const pr = Math.round(this.primaryColor.r);
     const pg = Math.round(this.primaryColor.g);
     const pb = Math.round(this.primaryColor.b);
 
     if (activeTarget) {
-      this.reticleX = activeTarget.x;
-      this.reticleY = activeTarget.y;
+      const isNewLine = activeTarget.lineIndex !== this.reticleLineIndex;
+      const isNewWord = activeTarget.wordIndex !== this.reticleWordIndex;
+
+      if (this.reticleX < 0 || this.reducedMotion || isNewLine) {
+        this.reticleX = activeTarget.x;
+        this.reticleY = activeTarget.y;
+        this.reticleFromX = activeTarget.x;
+        this.reticleFromY = activeTarget.y;
+        this.reticleProgress = 1.0;
+      } else if (isNewWord) {
+        this.reticleFromX = this.reticleX;
+        this.reticleFromY = this.reticleY;
+        this.reticleProgress = 0.0;
+      }
+
+      this.reticleLineIndex = activeTarget.lineIndex;
+      this.reticleWordIndex = activeTarget.wordIndex;
+
+      if (this.reticleProgress < 1.0) {
+        // Fast quartic ease-out (140ms) for snappy yet fluid star-to-star motion
+        this.reticleProgress = Math.min(1.0, this.reticleProgress + dt / 0.14);
+        const ease = 1.0 - Math.pow(1.0 - this.reticleProgress, 4);
+        this.reticleX = this.reticleFromX + (activeTarget.x - this.reticleFromX) * ease;
+        this.reticleY = this.reticleFromY + (activeTarget.y - this.reticleFromY) * ease;
+      } else {
+        this.reticleX = activeTarget.x;
+        this.reticleY = activeTarget.y;
+      }
+
       this.reticleAlpha = 1.0;
     } else {
       this.reticleAlpha = 0.0;
+      this.reticleWordIndex = -1;
     }
 
     if (this.reticleAlpha < 0.02) return;
